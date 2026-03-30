@@ -58,6 +58,7 @@ Open in browser:
 http://127.0.0.1:8000  
 http://127.0.0.1:8000/docs
 ```
+You may test backend CRUD here
 ### 8. Run Tests  
 ```bash
 pytest
@@ -74,4 +75,9 @@ backend/
 ├── tests/  
 ├── requirements.txt  
 
-Data will be accessed through department_id
+## Other notes
+
+Users and resources share "department_id".
+
+- [ ] Conflict detection; Approval; Cancellation
+- [x] Waitlist; Optimistic locking
