@@ -79,5 +79,5 @@ backend/
 
 Users and resources share "department_id".
 
-- [ ] Conflict detection; Approval; Cancellation
-- [x] Waitlist; Optimistic locking
+- [x] Conflict detection; Approval; Cancellation
+- [ ] Waitlist; Optimistic locking
