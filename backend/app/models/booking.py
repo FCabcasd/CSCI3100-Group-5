@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, String
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from .base import Base
 
 class Booking(Base):

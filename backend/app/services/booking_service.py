@@ -2,6 +2,8 @@ from app.models.booking import Booking
 from app.models.user import User
 from app.models.resource import Resource
 
+from datetime import datetime, timedelta
+
 def is_time_conflict(new_start, new_end, existing_start, existing_end):
     return new_start < existing_end and new_end > existing_start
 
@@ -30,4 +32,13 @@ def approve_booking(booking):
         return False
 
     booking.status = "approved"
+    return True
+
+def cancel_booking(booking, user):
+    deadline = booking.start_time - timedelta(hours=12)
+
+    if datetime.now() > deadline:
+        user.penalty_points += 1
+
+    booking.status = "cancelled"
     return True
