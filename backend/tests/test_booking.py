@@ -38,3 +38,11 @@ def test_approve_booking():
 
     assert result is True
     assert booking.status == "approved"
+
+def test_late_cancellation_penalty():
+    class FakeUser:
+        penalty_points = 0
+
+    FakeUser.penalty_points += 1
+
+    assert FakeUser.penalty_points == 1

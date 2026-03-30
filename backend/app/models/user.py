@@ -8,3 +8,4 @@ class User(Base):
     email = Column(String, unique=True)
     role = Column(String)
     department_id = Column(Integer, ForeignKey("departments.id"))
+    penalty_points = Column(Integer, default=0)
