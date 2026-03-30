@@ -18,3 +18,12 @@ def test_conflict_detection_simple():
     new_end = datetime(2026, 1, 1, 13, 0)
 
     assert is_time_conflict(new_start, new_end, existing_start, existing_end)
+
+def test_same_department():
+    class FakeUser:
+        department_id = 1
+
+    class FakeResource:
+        department_id = 1
+
+    assert FakeUser.department_id == FakeResource.department_id

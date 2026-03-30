@@ -1,4 +1,6 @@
 from app.models.booking import Booking
+from app.models.user import User
+from app.models.resource import Resource
 
 def is_time_conflict(new_start, new_end, existing_start, existing_end):
     return new_start < existing_end and new_end > existing_start
@@ -13,3 +15,12 @@ def has_conflict(db, resource_id, new_start, new_end):
             return True
 
     return False
+
+def same_department(db, user_id, resource_id):
+    user = db.query(User).filter(User.id == user_id).first()
+    resource = db.query(Resource).filter(Resource.id == resource_id).first()
+
+    if not user or not resource:
+        return False
+
+    return user.department_id == resource.department_id
