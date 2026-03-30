@@ -24,3 +24,10 @@ def same_department(db, user_id, resource_id):
         return False
 
     return user.department_id == resource.department_id
+
+def approve_booking(booking):
+    if booking.status != "pending":
+        return False
+
+    booking.status = "approved"
+    return True

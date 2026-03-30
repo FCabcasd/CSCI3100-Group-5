@@ -1,5 +1,5 @@
 from datetime import datetime
-from app.services.booking_service import is_time_conflict
+from app.services.booking_service import is_time_conflict, approve_booking
 
 def test_time_overlap():
     existing_start = datetime(2026, 1, 1, 10, 0)
@@ -27,3 +27,14 @@ def test_same_department():
         department_id = 1
 
     assert FakeUser.department_id == FakeResource.department_id
+
+def test_approve_booking():
+    class FakeBooking:
+        status = "pending"
+
+    booking = FakeBooking()
+
+    result = approve_booking(booking)
+
+    assert result is True
+    assert booking.status == "approved"

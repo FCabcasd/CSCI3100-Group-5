@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.booking import Booking
 from app.schemas.booking import BookingCreate
-from app.services.booking_service import has_conflict, same_department
+from app.services.booking_service import has_conflict, same_department, approve_booking
 
 router = APIRouter()
 
@@ -28,6 +28,25 @@ def create_booking(data: BookingCreate, db: Session = Depends(get_db)):
     )
 
     db.add(booking)
+    db.commit()
+    db.refresh(booking)
+
+    return booking
+
+
+@router.patch("/bookings/{booking_id}/approve")
+def approve_booking_route(booking_id: int, db: Session = Depends(get_db)):
+    booking = db.query(Booking).filter(Booking.id == booking_id).first()
+
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+
+    if not approve_booking(booking):
+        raise HTTPException(
+            status_code=400,
+            detail="Only pending bookings can be approved"
+        )
+
     db.commit()
     db.refresh(booking)
 
