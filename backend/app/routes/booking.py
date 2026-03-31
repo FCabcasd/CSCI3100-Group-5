@@ -80,6 +80,7 @@ def cancel_booking_route(booking_id: int, db: Session = Depends(get_db)):
 
     accepted_booking = None
 
+    # Currently replaces user directly without considering the new timeslot
     if next_waitlist_user:
         accepted_booking = accept_waitlist_user(db, booking, next_waitlist_user)
 
