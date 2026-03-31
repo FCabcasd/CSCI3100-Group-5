@@ -1,6 +1,7 @@
 from app.models.booking import Booking
 from app.models.user import User
 from app.models.resource import Resource
+from app.models.waitlist import Waitlist
 
 from datetime import datetime, timedelta
 
@@ -42,3 +43,21 @@ def cancel_booking(booking, user):
 
     booking.status = "cancelled"
     return True
+
+def get_next_waitlist_user(db, resource_id):
+    return db.query(Waitlist).filter(Waitlist.resource_id == resource_id).order_by(Waitlist.created_at).first()
+
+def accept_waitlist_user(db, cancelled_booking, next_waitlist_user):
+    new_booking = Booking(
+        user_id=next_waitlist_user.user_id,
+        resource_id=cancelled_booking.resource_id,
+        start_time=cancelled_booking.start_time,
+        end_time=cancelled_booking.end_time,
+        status="pending"
+    )
+
+    db.add(new_booking)
+
+    db.delete(next_waitlist_user)
+
+    return new_booking

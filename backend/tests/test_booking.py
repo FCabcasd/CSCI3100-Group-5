@@ -46,3 +46,17 @@ def test_late_cancellation_penalty():
     FakeUser.penalty_points += 1
 
     assert FakeUser.penalty_points == 1
+
+def test_waitlist():
+    queue = [2, 3, 4]
+
+    next_user = queue.pop(0)
+
+    assert next_user == 2
+
+def test_accept_waitlist():
+    queue = [2, 3]
+    promoted_user = queue.pop(0)
+
+    assert promoted_user == 2
+    assert queue == [3]
