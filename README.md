@@ -79,4 +79,5 @@ backend/
 
 Users and resources share "department_id".
 
-- [x] Conflict detection; Approval; Cancellation; Waitlist
+- [x] Conflict detection; Approval; Cancellation; Waitlist*
+Waitlist currently replaces the new user directly on the cancelled timeslots, instead of the new user's timeslot.
