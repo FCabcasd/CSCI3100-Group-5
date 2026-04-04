@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "cuhk-booking-backend"
+version = "0.1.0"
+description = "CUHK Venue & Equipment Booking Backend API"
+authors = ["CSCI3100 Group 5"]
+readme = "README.md"
+
+[tool.black]
+line-length = 100
+target-version = ['py311']
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

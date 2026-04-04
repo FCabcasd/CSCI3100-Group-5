@@ -1,83 +1,24 @@
-# CSCI3100-Group-5
+# README
 
-## Backend Setup (FastAPI)
+This README would normally document whatever steps are necessary to get the
+application up and running.
 
-### 1. Requirements
-- Install PostgreSQL
+Things you may want to cover:
 
-### 2. Clone Repository
-```bash
-git clone https://github.com/FCabcasd/CSCI3100-Group-5  
-cd backend
-```
+* Ruby version
 
-### 3. Create Virtual Environment  
-```bash
-python -m venv venv
-```
-### To activate:
+* System dependencies
 
-Windows  
-```bash
-venv\Scripts\activate
-```
-Mac/Linux  
-```bash
-source venv/bin/activate
-```
-### 4. Install Dependencies  
-```bash
-pip install -r requirements.txt
-```
-### 5. Setup PostgreSQL Database  
+* Configuration
 
-Login to PostgreSQL:  
-```bash
-psql -U postgres
-```
-Create database:  
-```bash
-CREATE DATABASE booking_db;
-```
-### 6. Configure Database Connection  
+* Database creation
 
-Edit app/database.py:  
-```bash
-DATABASE_URL = "postgresql://postgres:<YOUR_PASSWORD>@localhost/booking_db"
-```
-Note:  
-The password is currently hardcoded,  
-it should be moved to a .env file later but I'm not sure how.
+* Database initialization
 
-### 7. Run Server  
-```bash
-uvicorn app.main:app --reload
-```
-Open in browser:  
-```bash
-http://127.0.0.1:8000  
-http://127.0.0.1:8000/docs
-```
-You may test backend CRUD here
-### 8. Run Tests  
-```bash
-pytest
-```
+* How to run the test suite
 
-## Project Structure  
+* Services (job queues, cache servers, search engines, etc.)
 
-backend/  
-├── app/  
-│   ├── main.py  
-│   ├── database.py  
-│   ├── models/  
-│   └── ...  
-├── tests/  
-├── requirements.txt  
+* Deployment instructions
 
-## Other notes
-
-Users and resources share "department_id".
-
-- [x] Conflict detection; Approval; Cancellation; Waitlist*
-Waitlist currently replaces the new user directly on the cancelled timeslots, instead of the new user's timeslot.
+* ...
