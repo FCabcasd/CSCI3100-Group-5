@@ -281,7 +281,8 @@ class BookingService:
         hours_before = (booking.start_time - now).total_seconds() / 3600
         
         # 从预订所属租户获取取消截止时间
-        tenant = await db.get(Tenant, booking.venue.tenant_id)
+        venue = await db.get(Venue, booking.venue_id)
+        tenant = await db.get(Tenant, venue.tenant_id)
         is_late = hours_before < tenant.cancellation_deadline_hours
         
         # 更新预订状态

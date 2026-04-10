@@ -4,14 +4,15 @@ from sqlalchemy.orm import declarative_base
 from app.config import settings
 
 # 数据库引擎配置
-engine = create_async_engine(
-    settings.DATABASE_URL,
+_engine_kwargs = dict(
     echo=settings.SQLALCHEMY_ECHO,
     future=True,
-    pool_pre_ping=True,
-    pool_size=10,
-    max_overflow=20,
 )
+# SQLite 不支持连接池参数
+if not settings.DATABASE_URL.startswith("sqlite"):
+    _engine_kwargs.update(pool_pre_ping=True, pool_size=10, max_overflow=20)
+
+engine = create_async_engine(settings.DATABASE_URL, **_engine_kwargs)
 
 # 会话工厂
 AsyncSessionLocal = async_sessionmaker(

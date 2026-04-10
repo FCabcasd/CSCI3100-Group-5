@@ -5,7 +5,7 @@ from typing import Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthCredentials
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.config import settings
 from app.models import User
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -61,7 +61,7 @@ def decode_token(token: str) -> Optional[dict]:
 
 
 async def get_current_user(
-    credentials: HTTPAuthCredentials = Depends(security),
+    credentials: HTTPAuthorizationCredentials = Depends(security),
     db: AsyncSession = Depends(get_db),
 ) -> User:
     """获取当前认证用户"""
@@ -75,13 +75,14 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    user_id: int = payload.get("sub")
-    if not user_id:
+    sub = payload.get("sub")
+    if not sub:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    user_id = int(sub)
     
     # 从数据库获取用户
     result = await db.execute(select(User).where(User.id == user_id))
@@ -111,7 +112,7 @@ async def get_current_user(
 
 
 async def get_optional_user(
-    credentials: HTTPAuthCredentials = Depends(security) or None,
+    credentials: HTTPAuthorizationCredentials = Depends(security) or None,
     db: AsyncSession = Depends(get_db),
 ) -> Optional[User]:
     """获取可选的当前用户"""

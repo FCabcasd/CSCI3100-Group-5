@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from typing import List
 
 from app.database import get_db
@@ -42,6 +43,7 @@ async def list_bookings(
     result = await db.execute(
         select(Booking)
         .where(Booking.user_id == current_user.id)
+        .options(selectinload(Booking.venue), selectinload(Booking.user), selectinload(Booking.equipment_list))
         .offset(skip)
         .limit(limit)
         .order_by(Booking.created_at.desc())
@@ -57,7 +59,12 @@ async def get_booking(
     db: AsyncSession = Depends(get_db),
 ):
     """获取预订详情"""
-    booking = await db.get(Booking, booking_id)
+    result = await db.execute(
+        select(Booking)
+        .where(Booking.id == booking_id)
+        .options(selectinload(Booking.venue), selectinload(Booking.user), selectinload(Booking.equipment_list))
+    )
+    booking = result.scalar_one_or_none()
     
     if not booking:
         raise HTTPException(

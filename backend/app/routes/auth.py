@@ -82,8 +82,8 @@ async def login(
         )
     
     # 创建令牌
-    access_token = create_access_token({"sub": user.id})
-    refresh_token = create_refresh_token({"sub": user.id})
+    access_token = create_access_token({"sub": str(user.id)})
+    refresh_token = create_refresh_token({"sub": str(user.id)})
     
     return {
         "access_token": access_token,
@@ -113,7 +113,7 @@ async def refresh(
         )
     
     user_id = payload.get("sub")
-    result = await db.execute(select(User).where(User.id == user_id))
+    result = await db.execute(select(User).where(User.id == int(user_id)))
     user = result.scalar_one_or_none()
     
     if not user or not user.is_active:
@@ -123,7 +123,7 @@ async def refresh(
         )
     
     # 创建新的访问令牌
-    access_token = create_access_token({"sub": user.id})
+    access_token = create_access_token({"sub": str(user.id)})
     
     return {
         "access_token": access_token,
