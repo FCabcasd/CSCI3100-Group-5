@@ -216,14 +216,15 @@ class Booking(Base):
 class Cancellation(Base):
     """取消记录模型"""
     __tablename__ = "cancellation"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     booking_id = Column(Integer, ForeignKey('booking.id'), nullable=False, unique=True)
     cancelled_at = Column(DateTime(timezone=True), server_default=func.now())
     hours_before_start = Column(Float)  # 距离开始时间多少小时取消
     reason = Column(Text)
     is_late_cancellation = Column(Boolean, default=False)  # 是否为迟到取消
-    
+    points_deducted = Column(Integer, nullable=True)  # 扣除了多少积分
+
     # 关系
     booking = relationship("Booking", back_populates="cancellation")
 

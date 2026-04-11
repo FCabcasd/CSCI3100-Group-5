@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import logging
 
 from app.config import settings
-from app.routes import auth, bookings, venues
+from app.routes import auth, bookings, venues, ai
 
 # 配置日志
 logging.basicConfig(
@@ -34,6 +34,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(bookings.router)
 app.include_router(venues.router)
+app.include_router(ai.router)
 
 
 @app.get("/api/health")
