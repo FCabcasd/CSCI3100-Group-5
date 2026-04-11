@@ -141,6 +141,22 @@ async def venue(db: AsyncSession, tenant: Tenant) -> Venue:
     await db.refresh(v)
     return v
 
+@pytest_asyncio.fixture
+async def equipment(db: AsyncSession, tenant: Tenant) -> Equipment:
+    e = Equipment(
+        tenant_id=tenant.id,
+        name="Test Projector",
+        description="A test equipment",
+        quantity = 1,  # 数量
+        equipment_type = "Projector",  # 设备类型
+        status = "available",  # 状态
+        image_url = "http://example.com/image.jpg",
+        is_active = True,
+    )
+    db.add(e)
+    await db.commit()
+    await db.refresh(e)
+    return e
 
 # ── Helpers ──
 

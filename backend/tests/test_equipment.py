@@ -10,13 +10,14 @@ pytestmark = pytest.mark.asyncio
 async def test_create_equipment_admin(client: AsyncClient, admin_user: User, tenant: Tenant):
     resp = await client.post("/api/equipments/", json={
         "name": "Projector", "tenant_id": tenant.id, "description": "HD projector",
+        "equipment_type": "projector",
     }, headers=auth_header(admin_user))
     assert resp.status_code == 200
     assert resp.json()["name"] == "Projector"
 
 async def test_create_equipment_user_forbidden(client: AsyncClient, user: User, tenant: Tenant):
     resp = await client.post("/api/equipments/", json={
-        "name": "X", "tenant_id": tenant.id,
+        "name": "X", "tenant_id": tenant.id, "equipment_type": "other",
     }, headers=auth_header(user))
     assert resp.status_code == 403
 

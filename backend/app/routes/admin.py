@@ -13,6 +13,7 @@ from app.services import UserService
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
+@router.get("/users", response_model=List[UserResponse])
 @router.get("/users/", response_model=List[UserResponse])
 async def list_users(
     current_user: User = Depends(get_current_user),
@@ -44,6 +45,7 @@ async def list_users(
     return users
 
 @router.post("/users/{id}/suspend", response_model=UserResponse)
+@router.post("/users/{id}/suspend/", response_model=UserResponse)
 async def suspend_users(
     id: int,
     current_user: User = Depends(get_current_user),
@@ -64,6 +66,7 @@ async def suspend_users(
     return user
 
 @router.delete("/users/{id}")
+@router.delete("/users/{id}/")
 async def delete_users(
     id: int,
     current_user: User = Depends(get_current_user),
