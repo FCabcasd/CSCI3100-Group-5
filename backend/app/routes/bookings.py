@@ -116,7 +116,7 @@ async def cancel_booking(
             detail="预订已被取消",
         )
     
-    cancellation = await BookingService.cancel_booking(db, booking, reason)
+    cancellation, promoted_booking = await BookingService.cancel_booking(db, booking, reason)
 
     # Send cancellation email asynchronously via Celery
     send_booking_cancellation_task.delay(
@@ -129,7 +129,9 @@ async def cancel_booking(
     return {
         "success": True,
         "message": "预订已取消",
+        "cancelled_booking_id": booking.id,
         "cancellation": cancellation,
+        "new_booking": promoted_booking,
     }
 
 

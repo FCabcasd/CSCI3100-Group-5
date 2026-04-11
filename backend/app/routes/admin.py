@@ -23,18 +23,17 @@ async def list_users(
 ):
     check_admin(current_user)
     """获取用戶列表"""
-    valid_roles = {"admin", "tenant_admin", "user"}
-    if role and all(x in valid_roles for x in role):
+    if role:
+        if not all(r in {"admin", "tenant_admin", "user"} for r in role):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="角色不存在",
+            )
         result = await db.execute(
             select(User)
             .where(User.is_active == True)
             .filter(User.role.in_(role))
             .offset(skip)
-        )
-    elif role:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="角色不存在",
         )
     else:
         result = await db.execute(
