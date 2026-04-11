@@ -22,12 +22,17 @@ async def list_users(
 ):
     check_admin(current_user)
     """获取用戶列表"""
-    if role: 
+    if role and all(x in role for x in ["admin", "tenant_admin", "user"]):
         result = await db.execute(
             select(User)
             .where(User.is_active == True)
             .filter(User.role.in_(role))
             .offset(skip)
+        )
+    elif role:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="角色不存在",
         )
     else:
         result = await db.execute(
@@ -51,7 +56,7 @@ async def suspend_users(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="设备不存在",
+            detail="用户不存在",
         )
     
     UserService.suspend_user(db, user)
@@ -71,7 +76,7 @@ async def delete_users(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="设备不存在",
+            detail="用户不存在",
         )
     
     user.is_active = False
