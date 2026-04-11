@@ -14,6 +14,7 @@ from app.services import UserService
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
 @router.get("/users", response_model=List[UserResponse])
+@router.get("/users/", response_model=List[UserResponse])
 async def list_users(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -22,7 +23,8 @@ async def list_users(
 ):
     check_admin(current_user)
     """获取用戶列表"""
-    if role and all(x in role for x in ["admin", "tenant_admin", "user"]):
+    valid_roles = {"admin", "tenant_admin", "user"}
+    if role and all(x in valid_roles for x in role):
         result = await db.execute(
             select(User)
             .where(User.is_active == True)
@@ -40,10 +42,11 @@ async def list_users(
             .where(User.is_active == True)
             .offset(skip)
         )
-    users = result.all()
+    users = result.scalars().all()
     return users
 
 @router.post("/users/{id}/suspend", response_model=UserResponse)
+@router.post("/users/{id}/suspend/", response_model=UserResponse)
 async def suspend_users(
     id: int,
     current_user: User = Depends(get_current_user),
@@ -59,11 +62,12 @@ async def suspend_users(
             detail="用户不存在",
         )
     
-    UserService.suspend_user(db, user)
+    await UserService.suspend_user(db, user)
 
     return user
 
 @router.delete("/users/{id}")
+@router.delete("/users/{id}/")
 async def delete_users(
     id: int,
     current_user: User = Depends(get_current_user),
@@ -82,5 +86,5 @@ async def delete_users(
     user.is_active = False
     await db.commit()
     
-    return {"success": True, "message": "用戶已删除"}
+    return {"success": True, "message": "用户已删除"}
     

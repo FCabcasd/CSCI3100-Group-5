@@ -15,7 +15,7 @@ os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///./test.db"
 
 from app.database import Base, get_db  # noqa: E402
 from app.main import app  # noqa: E402
-from app.models import User, Tenant, Venue, UserRole  # noqa: E402
+from app.models import User, Tenant, Venue, UserRole, Equipment  # noqa: E402
 from app.auth import hash_password, create_access_token  # noqa: E402
 
 # ── 测试引擎 ──
@@ -128,6 +128,22 @@ async def venue(db: AsyncSession, tenant: Tenant) -> Venue:
     await db.refresh(v)
     return v
 
+@pytest_asyncio.fixture
+async def equipment(db: AsyncSession, tenant: Tenant) -> Equipment:
+    e = Equipment(
+        tenant_id=tenant.id,
+        name="Test Projector",
+        description="A test equipment",
+        quantity = 1,  # 数量
+        equipment_type = "Projector",  # 设备类型
+        status = "available",  # 状态
+        image_url = "http://example.com/image.jpg",
+        is_active = True,
+    )
+    db.add(e)
+    await db.commit()
+    await db.refresh(e)
+    return e
 
 # ── Helpers ──
 

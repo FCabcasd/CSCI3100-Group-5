@@ -340,6 +340,7 @@ class UserService:
     ) -> User:
         """暂停用户账户（迟到取消过多）"""
         user.suspension_until = datetime.utcnow() + timedelta(hours=hours)
+        user.is_active = False
         await db.commit()
         await db.refresh(user)
 
