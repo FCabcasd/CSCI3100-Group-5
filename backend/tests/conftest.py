@@ -80,7 +80,7 @@ async def tenant(db: AsyncSession) -> Tenant:
     return t
 
 
-@pytest.asyncio.fixture
+@pytest_asyncio.fixture
 async def equipment(db, tenant):
     equipment = Equipment(
         name="Projector",
