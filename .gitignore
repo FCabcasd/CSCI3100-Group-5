@@ -33,3 +33,11 @@
 # Ignore key files for decrypting credentials and more.
 /config/*.key
 
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Test DB
+*.db

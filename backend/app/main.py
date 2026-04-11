@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import logging
 
 from app.config import settings
-from app.routes import auth, bookings, venues, equipment
+from app.routes import auth, bookings, venues, equipment, ai, admin
 
 
 # 配置日志
@@ -36,7 +36,7 @@ app.include_router(auth.router)
 app.include_router(bookings.router)
 app.include_router(venues.router)
 app.include_router(equipment.router)
-
+app.include_router(admin.router)
 
 @app.get("/api/health")
 async def health_check():

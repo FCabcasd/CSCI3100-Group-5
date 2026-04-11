@@ -5,10 +5,11 @@ from typing import List, Optional, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_
 from app.models import (
-    Booking, Venue, Equipment, User, Cancellation, 
+    Booking, Venue, Equipment, User, Cancellation,
     PointDeduction, BookingStatus, Tenant
 )
 from app.schemas import BookingCreate, RecurringBookingCreate
+from app.utils.email import send_account_suspension
 import logging
 
 logger = logging.getLogger(__name__)
@@ -281,7 +282,8 @@ class BookingService:
         hours_before = (booking.start_time - now).total_seconds() / 3600
         
         # 从预订所属租户获取取消截止时间
-        tenant = await db.get(Tenant, booking.venue.tenant_id)
+        venue = await db.get(Venue, booking.venue_id)
+        tenant = await db.get(Tenant, venue.tenant_id)
         is_late = hours_before < tenant.cancellation_deadline_hours
         
         # 更新预订状态
@@ -296,16 +298,18 @@ class BookingService:
             hours_before_start=hours_before,
             reason=reason,
             is_late_cancellation=is_late,
+            points_deducted=0,
         )
-        
+
         db.add(cancellation)
-        
+
         # 如果是迟到取消，扣分
         if is_late:
             user = await db.get(User, booking.user_id)
             points_deduction = tenant.point_deduction_per_late_cancel
             user.points -= points_deduction
-            
+            cancellation.points_deducted = points_deduction
+
             # 记录扣分
             point_record = PointDeduction(
                 user_id=booking.user_id,
@@ -314,7 +318,7 @@ class BookingService:
                 reason="late_cancellation",
             )
             db.add(point_record)
-            
+
             logger.info(f"Deducted {points_deduction} points from user {booking.user_id}")
         
         await db.commit()
@@ -332,12 +336,22 @@ class UserService:
         db: AsyncSession,
         user: User,
         hours: int = 24,
+        reason: str = "Excessive late cancellations",
     ) -> User:
         """暂停用户账户（迟到取消过多）"""
         user.suspension_until = datetime.utcnow() + timedelta(hours=hours)
         await db.commit()
         await db.refresh(user)
-        
+
+        # Send suspension notification email
+        await send_account_suspension(
+            user_name=user.full_name or user.username,
+            user_email=user.email,
+            suspended_until=user.suspension_until.strftime("%Y-%m-%d %H:%M"),
+            reason=reason,
+            hours_suspended=hours,
+        )
+
         logger.info(f"User {user.id} suspended until {user.suspension_until}")
         return user
     

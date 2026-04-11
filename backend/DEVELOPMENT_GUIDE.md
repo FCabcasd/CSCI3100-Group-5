@@ -78,21 +78,38 @@
 2. ❌ `/api/analytics` - 分析路由
 3. ❌ `/api/admin` - 管理路由
 
-## 第六阶段：外部集成
+## 第六階段：外部集成
 
-### 待实现：
+### 已完成：
+1. ✅ 郵件服務（確認、取消通知）- 全英文模板
+   - `app/utils/email.py` - 郵件發送模組
+   - 預訂確認郵件
+   - 管理員確認郵件
+   - 取消通知郵件
+   - 重複預訂確認郵件
+
+### 待實現：
 1. ❌ Google Maps API集成
-2. ❌ OpenAI API集成（AI咨询）
-3. ❌ 邮件服务（确认、取消通知）
-4. ❌ Redis缓存层
+2. ✅ OpenAI API集成（AI諮詢）✅ (已完成)
+3. ❌ Redis緩存層
 
-## 第七阶段：后台任务
+## 第七階段：後台任務
 
-### 待实现：
-1. ❌ Celery任务配置
-2. ❌ 定时任务（无人出席处理）
-3. ❌ 邮件发送任务
-4. ❌ WebSocket实时通知
+### 已完成：
+1. ✅ Celery 任務配置
+   - `app/celery_config.py` - Celery 配置和 Beat 排程
+   - `app/tasks.py` - 後台任務實現
+2. ✅ 定時任務
+   - 預訂提醒（24h/1h）- 每 30 分鐘執行
+   - 清理 90 天前取消記錄 - 每天 03:00
+   - 檢查用戶封禁狀態 - 每小時執行
+3. ✅ 郵件發送任務（非同步）
+   - `send_booking_confirmation_task`
+   - `send_booking_confirmed_by_admin_task`
+   - `send_booking_cancellation_task`
+
+### 待實現：
+1. ❌ WebSocket 實時通知
 
 ## 第八阶段：测试
 
@@ -157,15 +174,15 @@ def get_venues_near_location(latitude, longitude, radius=5000):
     pass
 ```
 
-### 5. OpenAI AI咨询 (★★☆☆☆)
+### 5. OpenAI AI諮詢 (已完成) ✅
 
 ```python
 # app/utils/ai_consultant.py
 from openai import OpenAI
 
 async def answer_booking_question(question: str) -> str:
-    # 使用GPT回答关于预订的问题
-    pass
+    # 使用GPT回答關於預訂的問題
+    # 已實現政策問答、場地推薦、預訂指引等功能
 ```
 
 ### 6. 邮件系统 (★★☆☆☆)
@@ -195,10 +212,13 @@ docker-compose up -d postgres redis
 # 2. 在另一个终端运行API服务
 uvicorn app.main:app --reload --port 8000
 
-# 3. 在第三个终端运行Celery（如果需要）
-celery -A app.tasks worker -l info
+# 3. 在第三个终端运行Celery Worker
+celery -A app.celery_config worker --loglevel=info
 
-# 4. 访问文档
+# 4. 在第四个终端运行Celery Beat（定時任務）
+celery -A app.celery_config beat --loglevel=info
+
+# 5. 访问文档
 http://localhost:8000/docs
 ```
 
@@ -277,20 +297,20 @@ WHERE id=1 AND status='pending'
 
 ---
 
-## 部署清单
+## 部署清單
 
-- [ ] 生成数据库迁移脚本
-- [ ] 配置生产环境的秘密密钥
-- [ ] 设置邮件服务
+- [ ] 生成數據庫遷移腳本
+- [ ] 配置生產環境的秘密密鑰
+- [x] 設置郵件服務 ✅（需配置 SMTP）
 - [ ] 配置Google Maps API
-- [ ] 配置OpenAI API密钥
-- [ ] 设置Redis
-- [ ] 配置Celery workers
-- [ ] 设置Nginx反向代理
-- [ ] 配置SSL证书
-- [ ] 设置监控和日志
-- [ ] 编写健康检查
-- [ ] 准备数据库备份策略
+- [x] 配置OpenAI API密鑰 ✅ (已完成)
+- [x] 設置Redis ✅
+- [x] 配置Celery workers ✅
+- [ ] 設置Nginx反向代理
+- [ ] 配置SSL證書
+- [ ] 設置監控和日誌
+- [ ] 編寫健康檢查
+- [ ] 準備數據庫備份策略
 
 ---
 
@@ -310,8 +330,11 @@ alembic upgrade head
 # 启动开发服务器
 uvicorn app.main:app --reload
 
-# 启动Celery
-celery -A app.tasks worker -l info
+# 启动Celery Worker
+celery -A app.celery_config worker --loglevel=info
+
+# 启动Celery Beat（定時任務）
+celery -A app.celery_config beat --loglevel=info
 
 # Docker命令
 docker-compose up -d
@@ -343,11 +366,13 @@ docker-compose logs -f api
 - ❌ `app/routes/equipment.py` - 设备路由
 - ❌ `app/routes/analytics.py` - 分析路由
 - ❌ `app/routes/admin.py` - 管理路由
-- ❌ `app/utils/email.py` - 邮件
+- ✅ `app/utils/email.py` - 邮件 ✅
 - ❌ `app/utils/google_maps.py` - Google Maps
-- ❌ `app/utils/ai_consultant.py` - AI
-- ❌ `app/tasks.py` - Celery任务
-- ❌ `tests/` - 测试文件
+- ✅ `app/utils/ai_consultant.py` - AI ✅
+- ✅ `app/tasks.py` - Celery 任务 ✅
+- ✅ `app/celery_config.py` - Celery 配置 ✅
+- ✅ `tests/test_email.py` - 邮件測試（22 tests）✅
+- ✅ `tests/test_tasks.py` - 任務測試（17 tests）✅
 - ❌ `migrations/` - Alembic迁移
 
 ---

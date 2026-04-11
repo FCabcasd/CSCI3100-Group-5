@@ -44,12 +44,17 @@
 - ✅ 支持daily, weekly, monthly模式
 - ✅ 自动冲突检测和生成
 
-#### 5. 实时通知（待实现）
+#### 5. 實時通知 ✅
 **Proposal**: "receive instant email confirmations after booking"  
-**解决方案**:
-- ❌ 邮件服务 (待实现)
-- ❌ WebSocket推送 (待实现)
-- ❌ Celery异步任务 (待实现)
+**解決方案**:
+- ✅ 郵件服務 (已完成)
+  - 預訂確認郵件
+  - 管理員確認郵件
+  - 取消通知郵件
+  - 重複預訂確認郵件
+  - 預訂提醒郵件（24h/1h）
+- ❌ WebSocket 推送 (待實現)
+- ✅ Celery 異步任務 (已完成)
 
 #### 6. Google Maps集成（待实现）
 **Proposal**: "view locations via integrated Google Maps"  
@@ -57,11 +62,13 @@
 - ❌ Google Maps API集成 (待实现)
 - ❌ 地理位置查询 (待实现)
 
-#### 7. AI咨询助手（待实现）
+#### 7. AI諮詢助手 ✅
 **Proposal**: "AI-powered consultation assistant driven by a public large language model API"  
-**解决方案**:
-- ❌ OpenAI GPT集成 (待实现)
-- ❌ 预订政策Q&A (待实现)
+**解決方案**:
+- ✅ OpenAI GPT集成 (已完成)
+- ✅ 預訂政策Q&A (已完成)
+- ✅ 場地推薦 (已完成)
+- ✅ 預訂指引 (已完成)
 
 #### 8. 仪表板统计（待实现）
 **Proposal**: "Administrators access usage statistics through an interactive dashboard"  
@@ -110,9 +117,10 @@ backend/
 │   ├── database.py                  # ✅ 数据库连接
 │   ├── models.py                    # ✅ SQLAlchemy模型
 │   ├── schemas.py                   # ✅ Pydantic schemas
-│   ├── auth.py                      # ✅ JWT认证
-│   ├── services.py                  # ✅ 业务逻辑
-│   ├── tasks.py                     # ❌ Celery任务（待实现）
+│   ├── auth.py                      # ✅ JWT認證
+│   ├── celery_config.py             # ✅ Celery 配置
+│   ├── services.py                  # ✅ 業務邏輯
+│   ├── tasks.py                     # ✅ Celery 任務
 │   ├── routes/
 │   │   ├── __init__.py
 │   │   ├── auth.py                  # ✅ 认证API
@@ -122,14 +130,16 @@ backend/
 │   │   ├── analytics.py             # ❌ 分析API (待实现)
 │   │   └── admin.py                 # ❌ 管理API (待实现)
 │   └── utils/
-│       ├── email.py                 # ❌ 邮件服务 (待实现)
-│       ├── google_maps.py           # ❌ Google Maps (待实现)
-│       └── ai_consultant.py         # ❌ AI咨询 (待实现)
+│       ├── email.py                 # ✅ 郵件服務 (全英文模板)
+│       ├── google_maps.py           # ❌ Google Maps (待實現)
+│       └── ai_consultant.py         # ❌ AI 諮詢 (待實現)
 ├── tests/
-│   ├── test_auth.py                 # ❌ 认证测试 (待实现)
-│   ├── test_bookings.py             # ❌ 预订测试 (待实现)
-│   ├── test_conflicts.py            # ❌ 冲突检测测试 (待实现)
-│   └── test_venues.py               # ❌ 场地测试 (待实现)
+│   ├── test_auth.py                 # ❌ 認證測試 (待實現)
+│   ├── test_bookings.py             # ❌ 預訂測試 (待實現)
+│   ├── test_conflicts.py            # ❌ 衝突檢測測試 (待實現)
+│   ├── test_email.py               # ✅ 郵件測試（22 tests）
+│   ├── test_tasks.py               # ✅ Celery 任務測試（17 tests）
+│   └── test_venues.py               # ❌ 場地測試 (待實現)
 ├── migrations/
 │   ├── alembic.ini                  # ❌ (待创建)
 │   └── versions/                    # ❌ (待创建)
@@ -463,15 +473,15 @@ CREATE TABLE point_deduction (
 - [ ] 单元测试编写
 
 #### Week 2
-- [ ] 邮件系统集成
+- [x] 邮件系统集成 ✅
 - [ ] Google Maps集成
-- [ ] OpenAI AI咨询
-- [ ] Celery后台任务
+- [x] OpenAI AI諮詢 ✅
+- [x] Celery后台任务 ✅
 
 ### Phase 3: 高级特性 (1周)
 
 - [ ] WebSocket实时通知
-- [ ] 分布式Celery workers
+- [x] 分布式Celery workers ✅
 - [ ] 缓存层优化
 - [ ] 数据库备份策略
 
@@ -487,7 +497,7 @@ CREATE TABLE point_deduction (
 ## 📊 当前进度
 
 ```
-总进度: ████████░░ 40% (第一阶段完成)
+总进度: ████████░░ 60% (已完成邮件通知 + Celery 任务)
 
 第一阶段 (核心架构): ██████████ 100% ✅
 ├─ 项目配置
@@ -502,15 +512,15 @@ CREATE TABLE point_deduction (
 ├─ Admin API
 └─ 测试
 
-第三阶段 (外部集成): ░░░░░░░░░░ 0% ⏳
-├─ Google Maps
-├─ OpenAI
-├─ 邮件服务
+第三阶段 (外部集成): ██████░░░░ 60% ⏳
+├─ Google Maps (待实现)
+├─ OpenAI ✅ (已完成)
+├─ 邮件服务 ✅ (已完成 - 英文模板)
 └─ 缓存策略
 
-第四阶段 (部署优化):  ░░░░░░░░░░ 0% ⏳
-├─ WebSocket
-├─ Celery集群
+第四阶段 (部署优化):  ████░░░░░░ 40% ⏳
+├─ WebSocket (待实现)
+├─ Celery集群 ✅ (已完成)
 ├─ 性能优化
 └─ 生产部署
 ```
@@ -540,12 +550,12 @@ CREATE TABLE point_deduction (
 - [ ] 代码通过black格式化
 - [ ] 通过isort自动import排序
 - [ ] flake8检查无错误
-- [ ] 单元测试通过
+- [x] 单元测试通过 ✅ (55 tests: 25 email + 17 tasks + 13 AI)
 - [ ] 没有SQL注入风险
 - [ ] 没有暴露敏感信息（API密钥等）
 - [ ] 数据库查询有正确的索引
 - [ ] 错误处理完善
-- [ ] 文档更新
+- [x] 文档更新 ✅
 
 ---
 
@@ -593,6 +603,6 @@ hashed_password = hash_password(plain_password)
 
 ---
 
-**最后更新**: 2024-04-01  
+**最后更新**: 2026-04-11  
 **维护者**: CSCI3100 Group 5  
 **许可证**: MIT

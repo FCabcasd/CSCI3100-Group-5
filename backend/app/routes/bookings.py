@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from typing import List
 
 from app.database import get_db
@@ -9,6 +10,11 @@ from app.models import User, Booking
 from app.schemas import BookingCreate, BookingResponse, BookingDetailResponse
 from app.auth import get_current_user
 from app.services import ConflictDetectionService, BookingService
+from app.tasks import (
+    send_booking_confirmation_task,
+    send_booking_confirmed_by_admin_task,
+    send_booking_cancellation_task,
+)
 
 router = APIRouter(prefix="/api/bookings", tags=["bookings"])
 
@@ -22,6 +28,8 @@ async def create_booking(
     """创建新预订"""
     try:
         booking = await BookingService.create_booking(db, current_user, booking_data)
+        # Send confirmation email asynchronously via Celery
+        send_booking_confirmation_task.delay(booking.id)
         return booking
     except ValueError as e:
         raise HTTPException(
@@ -41,6 +49,7 @@ async def list_bookings(
     result = await db.execute(
         select(Booking)
         .where(Booking.user_id == current_user.id)
+        .options(selectinload(Booking.venue), selectinload(Booking.user), selectinload(Booking.equipment_list))
         .offset(skip)
         .limit(limit)
         .order_by(Booking.created_at.desc())
@@ -56,7 +65,12 @@ async def get_booking(
     db: AsyncSession = Depends(get_db),
 ):
     """获取预订详情"""
-    booking = await db.get(Booking, booking_id)
+    result = await db.execute(
+        select(Booking)
+        .where(Booking.id == booking_id)
+        .options(selectinload(Booking.venue), selectinload(Booking.user), selectinload(Booking.equipment_list))
+    )
+    booking = result.scalar_one_or_none()
     
     if not booking:
         raise HTTPException(
@@ -103,7 +117,15 @@ async def cancel_booking(
         )
     
     cancellation = await BookingService.cancel_booking(db, booking, reason)
-    
+
+    # Send cancellation email asynchronously via Celery
+    send_booking_cancellation_task.delay(
+        booking_id=booking.id,
+        reason=reason,
+        is_late_cancellation=cancellation.is_late_cancellation,
+        points_deducted=cancellation.points_deducted,
+    )
+
     return {
         "success": True,
         "message": "预订已取消",
@@ -141,7 +163,10 @@ async def confirm_booking(
     booking.status = "confirmed"
     await db.commit()
     await db.refresh(booking)
-    
+
+    # Send confirmation email asynchronously via Celery
+    send_booking_confirmed_by_admin_task.delay(booking.id)
+
     return {
         "success": True,
         "message": "预订已确认",

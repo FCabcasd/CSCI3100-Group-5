@@ -377,8 +377,9 @@ backend/
 │   ├── models.py ⭐ 数据模型（8个表）
 │   ├── schemas.py ⭐ 数据验证（20+ schemas）
 │   ├── auth.py ⭐ 认证系统
+│   ├── celery_config.py ⭐ Celery 配置
 │   ├── services.py ⭐ 业务逻辑（核心！）
-│   ├── tasks.py (待实现) Celery任务
+│   ├── tasks.py ⭐ Celery 后台任务
 │   ├── routes/
 │   │   ├── auth.py ⭐ 认证API
 │   │   ├── bookings.py ⭐ 预订API
@@ -387,10 +388,13 @@ backend/
 │   │   ├── analytics.py (待实现)
 │   │   └── admin.py (待实现)
 │   └── utils/
-│       ├── email.py (待实现)
+│       ├── email.py ⭐ 邮件通知（英文模板）
 │       ├── google_maps.py (待实现)
-│       └── ai_consultant.py (待实现)
-├── tests/ (待实现)
+│       └── ai_consultant.py ⭐ AI 諮詢助手 ✅
+├── tests/
+│   ├── test_email.py ⭐ 邮件测试（25 tests）
+│   ├── test_tasks.py ⭐ Celery 任务测试（17 tests）
+│   ├── test_ai.py ⭐ AI 諮詢测试（13 tests）
 ├── .env.example ✅ 环境变量模板
 ├── requirements.txt ✅ 依赖
 ├── Dockerfile ✅ Docker镜像
@@ -506,8 +510,11 @@ uvicorn app.main:app --reload
 # 数据库迁移
 alembic upgrade head
 
-# 启动Celery
-celery -A app.tasks worker -l info
+# 启动Celery Worker
+celery -A app.celery_config worker --loglevel=info
+
+# 启动Celery Beat（定時任務）
+celery -A app.celery_config beat --loglevel=info
 
 # Docker操作
 docker-compose up -d      # 启动
@@ -576,18 +583,19 @@ python dev_tools.py
 
 #### Week 2的任务：
 ```
-[ ] 1. Google Maps API集成
-[ ] 2. OpenAI API集成（AI咨询）
-[ ] 3. 邮件系统（确认、取消通知）
-[ ] 4. Redis缓存层
+[x] 1. Google Maps API集成 (待实现)
+[x] 2. OpenAI API集成（AI諮詢）✅ (已完成)
+[x] 3. 郵件系統（確認、取消通知）✅ (已完成)
+[x] 4. Redis緩存層 ✅ (已配置)
+[x] 5. Celery後台任務 ✅ (已完成)
 ```
 
 ### Phase 3: 高级功能 (推荐1周)
 
 ```
-[ ] WebSocket实时通知
-[ ] Celery后台任务
-[ ] 定时任务处理
+[x] WebSocket实时通知 (待实现)
+[x] Celery后台任务 ✅ (已完成)
+[x] 定时任务处理 ✅ (已完成)
 [ ] 性能监控
 ```
 
@@ -686,7 +694,7 @@ A:
 - ✅ 多租户隔离 - 完全实现
 - ✅ 取消和积分系统 - 完全实现
 - ✅ 重复预订 - 完全实现
-- ❌ 邮件通知 - 准备就绪
+- ✅ 邮件通知 - ✅ 已完成（英文模板）
 - ❌ Google Maps - 准备就绪
 - ❌ AI咨询 - 准备就绪
 
@@ -716,4 +724,4 @@ uvicorn app.main:app --reload
 - 🗺️ PROJECT_PLAN.md - 完整计划
 
 **联系**: CSCI3100 Group 5  
-**更新时间**: 2024-04-01
+**更新时间**: 2026-04-11
