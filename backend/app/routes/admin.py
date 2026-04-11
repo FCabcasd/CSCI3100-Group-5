@@ -17,17 +17,24 @@ router = APIRouter(prefix="/api/admin", tags=["admin"])
 async def list_users(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-    role: Optional[str] = Query(None),
+    role: Optional[List[str]] = Query(None),
     skip: int = 0,
 ):
     check_admin(current_user)
-    """获取设备列表"""
-    result = await db.execute(
-        select(User)
-        .where(User.is_active == True)
-        .filter(User.role == role)
-        .offset(skip)
-    )
+    """获取用戶列表"""
+    if role: 
+        result = await db.execute(
+            select(User)
+            .where(User.is_active == True)
+            .filter(User.role.in_(role))
+            .offset(skip)
+        )
+    else:
+        result = await db.execute(
+            select(User)
+            .where(User.is_active == True)
+            .offset(skip)
+        )
     users = result.all()
     return users
 
