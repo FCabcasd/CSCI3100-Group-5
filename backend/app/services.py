@@ -325,7 +325,41 @@ class BookingService:
         await db.refresh(cancellation)
         
         logger.info(f"Cancelled booking {booking.id}")
-        return cancellation
+
+        promoted_booking = None
+
+        pending_result = await db.execute(
+            select(Booking)
+            .where(
+                Booking.venue_id == booking.venue_id,
+                Booking.status == BookingStatus.PENDING,
+                Booking.id != booking.id,
+            )
+            .order_by(Booking.created_at.asc())
+        )
+
+        pending_bookings = pending_result.scalars().all()
+
+        for candidate in pending_bookings:
+            available, _ = await ConflictDetectionService.validate_booking_times(
+                db=db,
+                venue_id=candidate.venue_id,
+                equipment_ids=[eq.id for eq in candidate.equipment_list],
+                start_time=candidate.start_time,
+                end_time=candidate.end_time,
+                exclude_booking_id=candidate.id,
+            )
+
+            if available:
+                candidate.status = BookingStatus.CONFIRMED
+                promoted_booking = candidate
+                break
+
+        if promoted_booking:
+            await db.commit()
+            await db.refresh(promoted_booking)
+            
+        return cancellation, promoted_booking
 
 
 class UserService:
