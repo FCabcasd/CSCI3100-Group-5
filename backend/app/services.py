@@ -373,6 +373,7 @@ class UserService:
         reason: str = "Excessive late cancellations",
     ) -> User:
         """暂停用户账户（迟到取消过多）"""
+        user.is_active = False
         user.suspension_until = datetime.utcnow() + timedelta(hours=hours)
         await db.commit()
         await db.refresh(user)

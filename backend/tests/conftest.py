@@ -80,6 +80,19 @@ async def tenant(db: AsyncSession) -> Tenant:
     return t
 
 
+@pytest.asyncio.fixture
+async def equipment(db, tenant):
+    equipment = Equipment(
+        name="Projector",
+        tenant_id=tenant.id,
+        description="HD projector",
+    )
+    db.add(equipment)
+    await db.commit()
+    await db.refresh(equipment)
+    return equipment
+
+
 @pytest_asyncio.fixture
 async def user(db: AsyncSession, tenant: Tenant) -> User:
     u = User(

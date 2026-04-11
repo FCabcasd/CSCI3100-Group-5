@@ -138,7 +138,11 @@ class EquipmentBase(BaseModel):
 
 
 class EquipmentCreate(EquipmentBase):
+    name: str
     tenant_id: int
+    description: Optional[str] = None
+    quantity: int = 1
+    equipment_type: Optional[str] = None
 
 
 class EquipmentUpdate(BaseModel):
