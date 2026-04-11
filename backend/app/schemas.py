@@ -133,7 +133,7 @@ class EquipmentBase(BaseModel):
     name: str
     description: Optional[str] = None
     quantity: int = 1
-    equipment_type: str
+    equipment_type: Optional[str] = None
     image_url: Optional[str] = None
 
 

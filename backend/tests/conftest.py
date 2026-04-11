@@ -15,7 +15,7 @@ os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///./test.db"
 
 from app.database import Base, get_db  # noqa: E402
 from app.main import app  # noqa: E402
-from app.models import User, Tenant, Venue, UserRole  # noqa: E402
+from app.models import User, Tenant, Venue, UserRole, Equipment  # noqa: E402
 from app.auth import hash_password, create_access_token  # noqa: E402
 
 # ── 测试引擎 ──
