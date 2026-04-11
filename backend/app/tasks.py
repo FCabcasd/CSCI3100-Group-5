@@ -21,6 +21,9 @@ from app.utils.email import (
 
 logger = logging.getLogger(__name__)
 
+# Import celery_app from celery_config to register tasks
+from app.celery_config import celery_app
+
 # Synchronous database engine for Celery tasks
 _engine_kwargs = dict(pool_pre_ping=True, pool_size=5, max_overflow=10)
 if settings.DATABASE_URL.startswith("sqlite"):
@@ -83,6 +86,7 @@ def _close_db_session(db: Session):
         pass
 
 
+@celery_app.task(name="send_booking_confirmation")
 def send_booking_confirmation_task(booking_id: int) -> dict:
     """Send booking confirmation email asynchronously"""
     data = _get_booking_email_data(booking_id)
@@ -111,6 +115,7 @@ def send_booking_confirmation_task(booking_id: int) -> dict:
         _close_db_session(db)
 
 
+@celery_app.task(name="send_booking_confirmed_by_admin")
 def send_booking_confirmed_by_admin_task(booking_id: int) -> dict:
     """Send booking confirmed by admin email asynchronously"""
     data = _get_booking_email_data(booking_id)
@@ -136,6 +141,7 @@ def send_booking_confirmed_by_admin_task(booking_id: int) -> dict:
         _close_db_session(db)
 
 
+@celery_app.task(name="send_booking_cancellation")
 def send_booking_cancellation_task(
     booking_id: int,
     reason: Optional[str] = None,

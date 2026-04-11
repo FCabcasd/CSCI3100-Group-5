@@ -6,6 +6,7 @@
 import os
 import pytest
 import pytest_asyncio
+from unittest.mock import patch, MagicMock
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
@@ -41,6 +42,18 @@ async def _reset_tables():
     yield
     async with engine_test.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
+
+
+@pytest.fixture(autouse=True)
+def _mock_celery():
+    """Mock Celery .delay() calls so tests don't need a running worker"""
+    with patch("app.routes.bookings.send_booking_confirmation_task") as mock_conf, \
+         patch("app.routes.bookings.send_booking_confirmed_by_admin_task") as mock_admin, \
+         patch("app.routes.bookings.send_booking_cancellation_task") as mock_cancel:
+        mock_conf.delay = MagicMock(return_value=None)
+        mock_admin.delay = MagicMock(return_value=None)
+        mock_cancel.delay = MagicMock(return_value=None)
+        yield
 
 
 @pytest_asyncio.fixture
