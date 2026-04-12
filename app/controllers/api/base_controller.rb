@@ -44,5 +44,17 @@ module Api
         render json: { error: "Tenant admin access required" }, status: :forbidden
       end
     end
+
+    def current_tenant_id
+      @current_user.tenant_id
+    end
+
+    def tenant_scope(model)
+      if @current_user.admin?
+        model.all
+      else
+        model.where(tenant_id: current_tenant_id)
+      end
+    end
   end
 end

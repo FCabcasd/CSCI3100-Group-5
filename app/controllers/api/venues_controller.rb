@@ -3,14 +3,14 @@ module Api
     before_action :require_tenant_admin!, only: [:create, :update, :destroy]
 
     def index
-      venues = Venue.where(is_active: true)
+      venues = tenant_scope(Venue).where(is_active: true)
                     .offset(params[:skip].to_i)
                     .limit([params.fetch(:limit, 10).to_i, 100].min)
       render json: venues.map { |v| venue_response(v) }
     end
 
     def show
-      venue = Venue.find(params[:id])
+      venue = tenant_scope(Venue).find(params[:id])
       render json: venue_response(venue)
     rescue ActiveRecord::RecordNotFound
       render json: { error: "Venue not found" }, status: :not_found

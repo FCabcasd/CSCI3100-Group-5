@@ -3,14 +3,14 @@ module Api
     before_action :require_tenant_admin!, only: [:create, :update, :destroy]
 
     def index
-      equipment = Equipment.where(is_active: true)
+      equipment = tenant_scope(Equipment).where(is_active: true)
                            .offset(params[:skip].to_i)
                            .limit([params.fetch(:limit, 10).to_i, 100].min)
       render json: equipment.map { |e| equipment_response(e) }
     end
 
     def show
-      eq = Equipment.find(params[:id])
+      eq = tenant_scope(Equipment).find(params[:id])
       render json: equipment_response(eq)
     rescue ActiveRecord::RecordNotFound
       render json: { error: "Equipment not found" }, status: :not_found
