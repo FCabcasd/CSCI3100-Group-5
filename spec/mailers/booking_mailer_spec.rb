@@ -15,7 +15,7 @@ RSpec.describe BookingMailer, type: :mailer do
 
     it 'renders the headers' do
       expect(mail.subject).to include("Booking Created")
-      expect(mail.to).to eq(["test@example.com"])
+      expect(mail.to).to eq([ "test@example.com" ])
     end
 
     it 'renders the body with booking details' do
@@ -28,7 +28,7 @@ RSpec.describe BookingMailer, type: :mailer do
 
     it 'renders the headers' do
       expect(mail.subject).to include("Booking Confirmed")
-      expect(mail.to).to eq(["test@example.com"])
+      expect(mail.to).to eq([ "test@example.com" ])
     end
 
     it 'renders the body' do
@@ -51,7 +51,7 @@ RSpec.describe BookingMailer, type: :mailer do
 
     it 'renders the headers' do
       expect(mail.subject).to include("Booking Cancelled")
-      expect(mail.to).to eq(["test@example.com"])
+      expect(mail.to).to eq([ "test@example.com" ])
     end
 
     it 'renders the body' do
@@ -60,12 +60,12 @@ RSpec.describe BookingMailer, type: :mailer do
   end
 
   describe '#recurring_booking_confirmation' do
-    let(:bookings) { [booking] }
+    let(:bookings) { [ booking ] }
     let(:mail) { described_class.recurring_booking_confirmation(bookings) }
 
     it 'renders the headers' do
       expect(mail.subject).to include("Recurring Booking Created")
-      expect(mail.to).to eq(["test@example.com"])
+      expect(mail.to).to eq([ "test@example.com" ])
     end
   end
 
@@ -74,7 +74,7 @@ RSpec.describe BookingMailer, type: :mailer do
 
     it 'renders the headers' do
       expect(mail.subject).to include("Account Suspended")
-      expect(mail.to).to eq(["test@example.com"])
+      expect(mail.to).to eq([ "test@example.com" ])
     end
 
     it 'includes the reason' do

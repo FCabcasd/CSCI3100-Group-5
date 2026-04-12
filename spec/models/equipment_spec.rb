@@ -15,7 +15,7 @@ RSpec.describe Equipment, type: :model do
     it '.active returns only active equipment' do
       active = create(:equipment, is_active: true)
       create(:equipment, is_active: false)
-      expect(Equipment.active).to eq([active])
+      expect(Equipment.active).to eq([ active ])
     end
   end
 end

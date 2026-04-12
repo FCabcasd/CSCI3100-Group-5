@@ -33,7 +33,7 @@ RSpec.describe AiConsultantService do
         svc.instance_variable_set(:@client, mock_client)
 
         allow(mock_client).to receive(:chat).and_return({
-          "choices" => [{ "message" => { "content" => "You can book venues online." } }]
+          "choices" => [ { "message" => { "content" => "You can book venues online." } } ]
         })
 
         result = svc.answer_question(
@@ -78,7 +78,7 @@ RSpec.describe AiConsultantService do
         svc.instance_variable_set(:@client, mock_client)
 
         allow(mock_client).to receive(:chat).and_return({
-          "choices" => [{ "message" => { "content" => "I recommend Venue A for your needs." } }]
+          "choices" => [ { "message" => { "content" => "I recommend Venue A for your needs." } } ]
         })
 
         result = svc.recommend_venues(requirements: "50 people room", tenant_id: tenant.id)
@@ -124,7 +124,7 @@ RSpec.describe AiConsultantService do
         svc.instance_variable_set(:@client, mock_client)
 
         allow(mock_client).to receive(:chat).and_return({
-          "choices" => [{ "message" => { "content" => "The time slot is available." } }]
+          "choices" => [ { "message" => { "content" => "The time slot is available." } } ]
         })
 
         result = svc.check_booking_conflicts(
@@ -147,7 +147,7 @@ RSpec.describe AiConsultantService do
         svc.instance_variable_set(:@client, mock_client)
 
         allow(mock_client).to receive(:chat).and_return({
-          "choices" => [{ "message" => { "content" => "There is a conflict." } }]
+          "choices" => [ { "message" => { "content" => "There is a conflict." } } ]
         })
 
         result = svc.check_booking_conflicts(

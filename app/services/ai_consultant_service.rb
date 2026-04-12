@@ -98,7 +98,7 @@ class AiConsultantService
     end_dt   = Time.zone.parse(end_time)
 
     conflicts = Booking.where(venue_id: venue_id)
-                       .where(status: [:confirmed, :pending])
+                       .where(status: [ :confirmed, :pending ])
                        .where("start_time < ? AND end_time > ?", end_dt, start_dt)
 
     conflict_info = conflicts.empty? ? "No conflicts found!" : "Conflicts with #{conflicts.count} existing booking(s)"

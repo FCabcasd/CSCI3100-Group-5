@@ -1,6 +1,6 @@
 module Api
   class AuthController < BaseController
-    skip_before_action :authorize_request, only: [:register, :login, :refresh]
+    skip_before_action :authorize_request, only: [ :register, :login, :refresh ]
 
     def register
       if User.exists?(email: params[:email])

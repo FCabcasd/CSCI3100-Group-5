@@ -12,7 +12,7 @@ Rails.application.routes.draw do
     get  "auth/me",       to: "auth#me"
 
     # Bookings
-    resources :bookings, only: [:index, :show, :create] do
+    resources :bookings, only: [ :index, :show, :create ] do
       member do
         post :cancel
         post :confirm
@@ -23,10 +23,10 @@ Rails.application.routes.draw do
     end
 
     # Venues
-    resources :venues, only: [:index, :show, :create, :update, :destroy]
+    resources :venues, only: [ :index, :show, :create, :update, :destroy ]
 
     # Equipment
-    resources :equipment, only: [:index, :show, :create, :update, :destroy]
+    resources :equipment, only: [ :index, :show, :create, :update, :destroy ]
 
     # Admin
     get    "admin/users",              to: "admin#users"

@@ -14,7 +14,7 @@ RSpec.describe Venue, type: :model do
     it '.active returns only active venues' do
       active = create(:venue, is_active: true)
       create(:venue, is_active: false)
-      expect(Venue.active).to eq([active])
+      expect(Venue.active).to eq([ active ])
     end
   end
 end

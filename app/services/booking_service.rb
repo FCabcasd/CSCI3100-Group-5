@@ -37,11 +37,11 @@ class BookingService
     end_hour = params[:end_time]
 
     delta = case pattern
-            when "daily"  then 1.day
-            when "weekly" then 1.week
-            when "monthly" then 1.month
-            else raise StandardError, "Invalid recurrence pattern: #{pattern}"
-            end
+    when "daily"  then 1.day
+    when "weekly" then 1.week
+    when "monthly" then 1.month
+    else raise StandardError, "Invalid recurrence pattern: #{pattern}"
+    end
 
     bookings = []
 
@@ -131,7 +131,7 @@ class BookingService
     # Try to promote a pending booking
     promoted = promote_pending_booking(booking)
 
-    [cancellation, promoted]
+    [ cancellation, promoted ]
   end
 
   def self.promote_pending_booking(cancelled_booking)

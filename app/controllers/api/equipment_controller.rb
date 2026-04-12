@@ -1,11 +1,11 @@
 module Api
   class EquipmentController < BaseController
-    before_action :require_tenant_admin!, only: [:create, :update, :destroy]
+    before_action :require_tenant_admin!, only: [ :create, :update, :destroy ]
 
     def index
       equipment = tenant_scope(Equipment).where(is_active: true)
                            .offset(params[:skip].to_i)
-                           .limit([params.fetch(:limit, 10).to_i, 100].min)
+                           .limit([ params.fetch(:limit, 10).to_i, 100 ].min)
       render json: equipment.map { |e| equipment_response(e) }
     end
 

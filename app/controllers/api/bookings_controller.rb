@@ -15,7 +15,7 @@ module Api
                               .includes(:venue, :user, :equipment_list)
                               .order(created_at: :desc)
                               .offset(params[:skip].to_i)
-                              .limit([params.fetch(:limit, 10).to_i, 100].min)
+                              .limit([ params.fetch(:limit, 10).to_i, 100 ].min)
       render json: bookings.map { |b| booking_detail_response(b) }
     end
 

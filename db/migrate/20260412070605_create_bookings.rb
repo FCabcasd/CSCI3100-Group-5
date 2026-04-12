@@ -22,7 +22,7 @@ class CreateBookings < ActiveRecord::Migration[8.1]
 
       t.timestamps
     end
-    add_index :bookings, [:start_time, :end_time]
+    add_index :bookings, [ :start_time, :end_time ]
     add_index :bookings, :status
   end
 end

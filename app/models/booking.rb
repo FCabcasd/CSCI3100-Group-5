@@ -14,7 +14,7 @@ class Booking < ApplicationRecord
   validates :end_time, presence: true
   validate :end_time_after_start_time
 
-  scope :active, -> { where(status: [:pending, :confirmed]) }
+  scope :active, -> { where(status: [ :pending, :confirmed ]) }
 
   private
 
