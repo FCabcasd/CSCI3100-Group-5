@@ -1,5 +1,9 @@
 class JsonWebToken
-  SECRET_KEY = Rails.application.credentials.secret_key_base || ENV.fetch("SECRET_KEY_BASE", "dev-secret-key")
+  SECRET_KEY = if Rails.env.production?
+    Rails.application.credentials.secret_key_base || ENV.fetch("SECRET_KEY_BASE") { raise "SECRET_KEY_BASE must be set in production" }
+  else
+    Rails.application.credentials.secret_key_base || ENV.fetch("SECRET_KEY_BASE", Rails.application.secret_key_base || SecureRandom.hex(64))
+  end
   ALGORITHM = "HS256"
   ACCESS_TOKEN_EXPIRE = 30.minutes
   REFRESH_TOKEN_EXPIRE = 7.days

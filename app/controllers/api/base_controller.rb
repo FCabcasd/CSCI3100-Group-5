@@ -29,7 +29,7 @@ module Api
 
       if @current_user.suspended?
         render json: { error: "User account is suspended" }, status: :forbidden
-        nil
+        return
       end
     end
 
@@ -55,6 +55,10 @@ module Api
       else
         model.where(tenant_id: current_tenant_id)
       end
+    end
+
+    def sanitize_sql_like(string)
+      ActiveRecord::Base.sanitize_sql_like(string)
     end
   end
 end

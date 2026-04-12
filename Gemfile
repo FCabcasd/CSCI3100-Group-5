@@ -27,6 +27,9 @@ gem "ruby-openai", "~> 6.0"
 # CORS support for API
 gem "rack-cors"
 
+# Rate limiting
+gem "rack-attack"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
