@@ -79,4 +79,40 @@ RSpec.describe "Api::Auth", type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
   end
+
+  describe "POST /api/auth/refresh" do
+    let(:user) { create(:user) }
+
+    it "refreshes access token with valid refresh token" do
+      refresh_token = JsonWebToken.encode_refresh(sub: user.id)
+      post "/api/auth/refresh", params: { refresh_token: refresh_token }, as: :json
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)
+      expect(json["access_token"]).to be_present
+      expect(json["token_type"]).to eq("bearer")
+    end
+
+    it "returns bad_request when refresh_token is missing" do
+      post "/api/auth/refresh", as: :json
+      expect(response).to have_http_status(:bad_request)
+    end
+
+    it "returns unauthorized for invalid refresh token" do
+      post "/api/auth/refresh", params: { refresh_token: "invalid.token.here" }, as: :json
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it "returns unauthorized for access token used as refresh" do
+      access_token = JsonWebToken.encode(sub: user.id)
+      post "/api/auth/refresh", params: { refresh_token: access_token }, as: :json
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it "returns unauthorized for disabled user" do
+      user.update!(is_active: false)
+      refresh_token = JsonWebToken.encode_refresh(sub: user.id)
+      post "/api/auth/refresh", params: { refresh_token: refresh_token }, as: :json
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
 end
