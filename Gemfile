@@ -16,7 +16,16 @@ gem "stimulus-rails"
 gem "jbuilder"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
-# gem "bcrypt", "~> 3.1.7"
+gem "bcrypt", "~> 3.1.7"
+
+# JWT authentication
+gem "jwt", "~> 2.7"
+
+# OpenAI integration for AI consultant
+gem "ruby-openai", "~> 6.0"
+
+# CORS support for API
+gem "rack-cors"
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
@@ -52,6 +61,12 @@ group :development, :test do
   gem "rubocop-rails-omakase", require: false
 
   gem "sqlite3", ">= 2.1"
+
+  # RSpec for TDD
+  gem "rspec-rails", "~> 7.0"
+  gem "factory_bot_rails", "~> 6.0"
+  gem "shoulda-matchers", "~> 6.0"
+  gem "faker"
 end
 
 group :development do
@@ -63,6 +78,10 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
+
+  # Cucumber for BDD
+  gem "cucumber-rails", require: false
+  gem "database_cleaner-active_record"
 end
 
 group :production do
