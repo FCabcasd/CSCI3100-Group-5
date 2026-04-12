@@ -28,6 +28,14 @@ Rails.application.routes.draw do
     # Equipment
     resources :equipment, only: [ :index, :show, :create, :update, :destroy ]
 
+    # Analytics
+    get "analytics/bookings/stats", to: "analytics#booking_stats"
+    get "analytics/venues/usage",   to: "analytics#venue_usage"
+    get "analytics/peak-times",     to: "analytics#peak_times"
+
+    # Maps
+    get "venues/:id/map",           to: "maps#show"
+
     # Admin
     get    "admin/users",              to: "admin#users"
     post   "admin/users/:id/suspend",  to: "admin#suspend_user"
