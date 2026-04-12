@@ -29,7 +29,7 @@ module Api
 
       if @current_user.suspended?
         render json: { error: "User account is suspended" }, status: :forbidden
-        return
+        nil
       end
     end
 

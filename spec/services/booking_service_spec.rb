@@ -52,7 +52,7 @@ RSpec.describe BookingService do
     it 'creates a booking with equipment' do
       eq1 = create(:equipment, tenant: tenant)
       eq2 = create(:equipment, tenant: tenant)
-      params[:equipment_ids] = [eq1.id, eq2.id]
+      params[:equipment_ids] = [ eq1.id, eq2.id ]
       booking = described_class.create_booking(user: user, params: params)
       expect(booking.equipment_list.count).to eq(2)
     end
@@ -127,7 +127,7 @@ RSpec.describe BookingService do
 
     it 'creates recurring bookings with equipment' do
       eq = create(:equipment, tenant: tenant)
-      params[:equipment_ids] = [eq.id]
+      params[:equipment_ids] = [ eq.id ]
       bookings = described_class.create_recurring_booking(user: user, params: params)
       bookings.each { |b| expect(b.equipment_list.count).to eq(1) }
     end
