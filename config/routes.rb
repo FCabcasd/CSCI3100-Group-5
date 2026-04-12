@@ -1,16 +1,42 @@
 Rails.application.routes.draw do
   get "home/index"
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
   root "home#index"
 
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
+  namespace :api do
+    # Auth
+    post "auth/register", to: "auth#register"
+    post "auth/login",    to: "auth#login"
+    post "auth/refresh",  to: "auth#refresh"
+    get  "auth/me",       to: "auth#me"
 
-  # Defines the root path route ("/")
-  # root "posts#index"
+    # Bookings
+    resources :bookings, only: [:index, :show, :create] do
+      member do
+        post :cancel
+        post :confirm
+      end
+      collection do
+        post :create_recurring
+      end
+    end
+
+    # Venues
+    resources :venues, only: [:index, :show, :create, :update, :destroy]
+
+    # Equipment
+    resources :equipment, only: [:index, :show, :create, :update, :destroy]
+
+    # Admin
+    get    "admin/users",              to: "admin#users"
+    post   "admin/users/:id/suspend",  to: "admin#suspend_user"
+    delete "admin/users/:id",          to: "admin#delete_user"
+
+    # AI
+    post "ai/ask",               to: "ai#ask"
+    post "ai/recommend-venues",  to: "ai#recommend_venues"
+    post "ai/check-conflicts",   to: "ai#check_conflicts"
+    get  "ai/status",            to: "ai#status"
+  end
 end
