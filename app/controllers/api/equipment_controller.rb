@@ -2,6 +2,17 @@ module Api
   class EquipmentController < BaseController
     before_action :require_tenant_admin!, only: [ :create, :update, :destroy ]
 
+    def search
+      query = params[:q].to_s.strip
+      return render json: { error: "Search query required" }, status: :bad_request if query.blank?
+
+      equipment = tenant_scope(Equipment).where(is_active: true)
+                       .where("name LIKE :q OR description LIKE :q OR equipment_type LIKE :q",
+                              q: "%#{sanitize_sql_like(query)}%")
+                       .limit([ params.fetch(:limit, 20).to_i, 100 ].min)
+      render json: equipment.map { |e| equipment_response(e) }
+    end
+
     def index
       equipment = tenant_scope(Equipment).where(is_active: true)
                            .offset(params[:skip].to_i)

@@ -10,10 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_12_070632) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_12_123942) do
   create_table "bookings", force: :cascade do |t|
     t.text "cancellation_reason"
     t.datetime "cancelled_at"
+    t.datetime "checked_in_at"
     t.string "contact_email"
     t.string "contact_person"
     t.string "contact_phone"
@@ -22,6 +23,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_12_070632) do
     t.datetime "end_time", null: false
     t.integer "estimated_attendance"
     t.boolean "is_recurring", default: false
+    t.integer "lock_version", default: 0, null: false
     t.integer "parent_booking_id"
     t.datetime "recurrence_end_date"
     t.string "recurrence_pattern"

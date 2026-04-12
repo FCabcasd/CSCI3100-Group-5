@@ -2,6 +2,17 @@ module Api
   class VenuesController < BaseController
     before_action :require_tenant_admin!, only: [ :create, :update, :destroy ]
 
+    def search
+      query = params[:q].to_s.strip
+      return render json: { error: "Search query required" }, status: :bad_request if query.blank?
+
+      venues = tenant_scope(Venue).where(is_active: true)
+                    .where("name LIKE :q OR location LIKE :q OR description LIKE :q",
+                           q: "%#{sanitize_sql_like(query)}%")
+                    .limit([ params.fetch(:limit, 20).to_i, 100 ].min)
+      render json: venues.map { |v| venue_response(v) }
+    end
+
     def index
       venues = tenant_scope(Venue).where(is_active: true)
                     .offset(params[:skip].to_i)

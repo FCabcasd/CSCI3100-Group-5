@@ -16,6 +16,7 @@ Rails.application.routes.draw do
       member do
         post :cancel
         post :confirm
+        post :check_in
       end
       collection do
         post :create_recurring
@@ -23,10 +24,18 @@ Rails.application.routes.draw do
     end
 
     # Venues
-    resources :venues, only: [ :index, :show, :create, :update, :destroy ]
+    resources :venues, only: [ :index, :show, :create, :update, :destroy ] do
+      collection do
+        get :search
+      end
+    end
 
     # Equipment
-    resources :equipment, only: [ :index, :show, :create, :update, :destroy ]
+    resources :equipment, only: [ :index, :show, :create, :update, :destroy ] do
+      collection do
+        get :search
+      end
+    end
 
     # Analytics
     get "analytics/bookings/stats", to: "analytics#booking_stats"
@@ -40,6 +49,7 @@ Rails.application.routes.draw do
     get    "admin/users",              to: "admin#users"
     post   "admin/users/:id/suspend",  to: "admin#suspend_user"
     delete "admin/users/:id",          to: "admin#delete_user"
+    post   "admin/bookings/:id/force_cancel", to: "admin#force_cancel"
 
     # AI
     post "ai/ask",               to: "ai#ask"
