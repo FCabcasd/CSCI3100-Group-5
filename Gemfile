@@ -82,6 +82,9 @@ group :test do
   # Cucumber for BDD
   gem "cucumber-rails", require: false
   gem "database_cleaner-active_record"
+
+  # Test coverage
+  gem "simplecov", require: false
 end
 
 group :production do
