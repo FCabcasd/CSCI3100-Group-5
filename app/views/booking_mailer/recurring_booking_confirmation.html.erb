@@ -1,0 +1,13 @@
+<h1>Recurring Booking Created</h1>
+<p>Dear <%= @user.full_name || @user.username %>,</p>
+<p>Your recurring booking has been created with a total of <strong><%= @count %></strong> instances.</p>
+
+<h3>Booking Summary</h3>
+<ul>
+  <li><strong>Title:</strong> <%= @bookings.first.title %></li>
+  <li><strong>Venue:</strong> <%= @venue.name %></li>
+  <li><strong>Pattern:</strong> <%= @bookings.first.recurrence_pattern&.capitalize %></li>
+  <li><strong>First Start:</strong> <%= @bookings.first.start_time.strftime("%Y-%m-%d %H:%M") %></li>
+</ul>
+
+<p>All bookings are currently <strong>pending confirmation</strong>.</p>

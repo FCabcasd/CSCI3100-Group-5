@@ -1,0 +1,13 @@
+<h1>Account Suspended</h1>
+<p>Dear <%= @user.full_name || @user.username %>,</p>
+<p>Your account has been <strong>suspended</strong>.</p>
+
+<h3>Suspension Details</h3>
+<ul>
+  <li><strong>Reason:</strong> <%= @reason %></li>
+  <li><strong>Duration:</strong> <%= @hours %> hours</li>
+  <li><strong>Ends:</strong> <%= @user.suspension_until&.strftime("%Y-%m-%d %H:%M") %></li>
+</ul>
+
+<p>During suspension you cannot create or modify bookings.</p>
+<p>Contact the administrator if you believe this was made in error.</p>

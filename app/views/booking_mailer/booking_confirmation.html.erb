@@ -1,0 +1,14 @@
+<h1>Booking Confirmation</h1>
+<p>Dear <%= @user.full_name || @user.username %>,</p>
+<p>Your booking has been successfully created with status: <strong>Pending Confirmation</strong>.</p>
+
+<h3>Booking Details</h3>
+<ul>
+  <li><strong>Title:</strong> <%= @booking.title %></li>
+  <li><strong>Venue:</strong> <%= @venue.name %></li>
+  <li><strong>Start Time:</strong> <%= @booking.start_time.strftime("%Y-%m-%d %H:%M") %></li>
+  <li><strong>End Time:</strong> <%= @booking.end_time.strftime("%Y-%m-%d %H:%M") %></li>
+  <li><strong>Contact:</strong> <%= @booking.contact_person %></li>
+</ul>
+
+<p>Please wait for the administrator to confirm your booking.</p>

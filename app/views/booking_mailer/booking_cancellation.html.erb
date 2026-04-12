@@ -1,0 +1,17 @@
+<h1>Booking Cancelled</h1>
+<p>Dear <%= @user.full_name || @user.username %>,</p>
+<p>Your booking has been <strong>cancelled</strong>.</p>
+
+<h3>Cancelled Booking</h3>
+<ul>
+  <li><strong>Title:</strong> <%= @booking.title %></li>
+  <li><strong>Venue:</strong> <%= @venue.name %></li>
+  <li><strong>Original Time:</strong> <%= @booking.start_time.strftime("%Y-%m-%d %H:%M") %> - <%= @booking.end_time.strftime("%Y-%m-%d %H:%M") %></li>
+  <li><strong>Reason:</strong> <%= @cancellation.reason || "Not provided" %></li>
+</ul>
+
+<% if @cancellation.is_late_cancellation && @cancellation.points_deducted.to_i > 0 %>
+  <div style="background-color: #fff3cd; padding: 10px; border-radius: 5px;">
+    <strong>Late Cancellation Notice:</strong> <%= @cancellation.points_deducted %> points have been deducted from your account.
+  </div>
+<% end %>
