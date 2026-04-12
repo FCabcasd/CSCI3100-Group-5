@@ -91,6 +91,14 @@ bundle exec cucumber
 - `POST /api/ai/recommend-venues` — Get venue recommendations
 - `POST /api/ai/check-conflicts` — Check time conflicts
 
+### Analytics
+- `GET /api/analytics/bookings/stats` — Booking statistics (admin)
+- `GET /api/analytics/venues/usage` — Venue usage report (admin)
+- `GET /api/analytics/peak-times` — Peak time analysis (admin)
+
+### Maps
+- `GET /api/venues/:id/map` — Google Maps URL for venue
+
 ## Environment Variables
 
 | Variable | Description | Required |
