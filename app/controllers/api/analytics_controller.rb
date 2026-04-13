@@ -60,7 +60,7 @@ module Api
     private
 
     def tenant_bookings
-      Booking.joins(:venue).where(venues: { tenant_id: @current_user.tenant_id })
+     Booking.all
     end
   end
 end

@@ -3,6 +3,12 @@
 <h2>Booking Stats</h2>
 <div id="stats">Loading...</div>
 
+<h2>Venue Usage</h2>
+<div id="venues">Loading...</div>
+
+<h2>Peak Times</h2>
+<div id="peak-times">Loading...</div>
+
 <script>
   async function loadBookingStats() {
     try {
@@ -10,7 +16,12 @@
       const data = await response.json();
 
       document.getElementById("stats").innerHTML = `
-        Total bookings: ${data.total_bookings}
+        Total bookings: ${data.total_bookings}<br>
+        Pending bookings: ${data.pending_bookings}<br>
+        Confirmed bookings: ${data.confirmed_bookings}<br>
+        Cancelled bookings: ${data.cancelled_bookings}<br>
+        Completed bookings: ${data.completed_bookings}<br>
+        No-show bookings: ${data.no_show_bookings}
       `;
     } catch (error) {
       document.getElementById("stats").innerText = "Failed to load booking stats";
@@ -18,5 +29,47 @@
     }
   }
 
+  async function loadVenueUsage() {
+    try {
+      const response = await fetch("/api/analytics/venues/usage");
+      const data = await response.json();
+
+      document.getElementById("venues").innerHTML = data.map(venue => `
+        ${venue.venue_name}: ${venue.booking_count} bookings, ${venue.total_hours_booked} hours
+      `).join("<br>");
+    } catch (error) {
+      document.getElementById("venues").innerText = "Failed to load venue usage";
+      console.error(error);
+    }
+  }
+
+  async function loadPeakTimes() {
+    try {
+      const response = await fetch("/api/analytics/peak-times");
+      const data = await response.json();
+
+      const hourly = data.hourly_peak_times.map(item =>
+        `${item.hour}:00 → ${item.booking_count} bookings`
+      ).join("<br>");
+
+      const weekday = data.weekday_peak_times.map(item =>
+        `${item.day}: ${item.booking_count} bookings`
+      ).join("<br>");
+
+      document.getElementById("peak-times").innerHTML = `
+        <strong>By hour</strong><br>
+        ${hourly}<br><br>
+        <strong>By weekday</strong><br>
+        ${weekday}
+      `;
+    } catch (error) {
+      document.getElementById("peak-times").innerText = "Failed to load peak times";
+      console.error(error);
+    }
+  }
+
+  // 页面加载时执行
   loadBookingStats();
+  loadVenueUsage();
+  loadPeakTimes();
 </script>
