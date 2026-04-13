@@ -90,6 +90,8 @@
       lbl_no_desc: "No description",
       lbl_features: "Features",
       lbl_none_listed: "None listed",
+      lbl_map: "Map",
+      btn_open_map: "Open in Google Maps",
 
       // ── Equipment ──
       browse_equip: "Browse Equipment",
@@ -313,6 +315,8 @@
       lbl_no_desc: "暂无描述",
       lbl_features: "设施",
       lbl_none_listed: "暂无",
+      lbl_map: "地图",
+      btn_open_map: "在 Google Maps 中查看",
 
       // ── 设备浏览 ──
       browse_equip: "浏览设备",

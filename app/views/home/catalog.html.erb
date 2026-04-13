@@ -317,6 +317,11 @@ document.addEventListener("turbo:load", () => {
   }
   function featureLabel(f) { return f.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()); }
   function escHtml(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+  function googleMapsUrl(v) {
+    if (v.latitude && v.longitude) return 'https://www.google.com/maps?q=' + v.latitude + ',' + v.longitude;
+    if (v.location) return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(v.location);
+    return 'https://www.google.com/maps';
+  }
 
   let currentVenueId = null;
   window.showVenueDetail = function(id) {
@@ -347,6 +352,14 @@ document.addEventListener("turbo:load", () => {
         '<div class="detail-item detail-item-wide">' +
           '<div class="detail-icon" style="background:#f0e6ff;color:#7b2d8e"><i class="bi bi-tags-fill"></i></div>' +
           '<div><div class="detail-label">' + t('lbl_features') + '</div><div class="detail-value detail-badges">' + (featHtml || '<span class="text-muted">' + t('lbl_none_listed') + '</span>') + '</div></div>' +
+        '</div>' +
+        '<div class="detail-item detail-item-wide">' +
+          '<div class="detail-icon" style="background:#e8f8e8;color:#198754"><i class="bi bi-map-fill"></i></div>' +
+          '<div><div class="detail-label">' + t('lbl_map') + '</div><div class="detail-value">' +
+            '<a href="' + googleMapsUrl(v) + '" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;background:linear-gradient(135deg,#34a853,#1a73e8);color:#fff;text-decoration:none;font-weight:600;font-size:.9rem;transition:transform .15s,box-shadow .15s;" onmouseover="this.style.transform=\'translateY(-1px)\';this.style.boxShadow=\'0 4px 12px rgba(26,115,232,0.3)\'" onmouseout="this.style.transform=\'\';this.style.boxShadow=\'\'">' +
+              '<i class="bi bi-google"></i> ' + t('btn_open_map') +
+            '</a>' +
+          '</div></div>' +
         '</div>' +
       '</div>';
     document.getElementById("venueOverlay").style.display = "block";
