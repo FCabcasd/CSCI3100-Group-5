@@ -13,10 +13,11 @@ Rails.application.routes.draw do
 
   namespace :api do
     # Auth
-    post "auth/register", to: "auth#register", as: :auth_register
-    post "auth/login",    to: "auth#login",    as: :auth_login
-    post "auth/refresh",  to: "auth#refresh",  as: :auth_refresh
-    get  "auth/me",       to: "auth#me",       as: :auth_me
+    post "auth/register", to: "auth#register"
+    post "auth/login",    to: "auth#login"
+    post "auth/refresh",  to: "auth#refresh"
+    get  "auth/me",       to: "auth#me"
+    get "analytics", to: "home#analytics"
 
     # Bookings
     resources :bookings, only: [ :index, :show, :create ] do

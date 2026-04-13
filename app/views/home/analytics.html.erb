@@ -1,0 +1,52 @@
+<h1>Analytics Dashboard</h1>
+
+<h2>Booking Stats</h2>
+<div id="stats">Loading...</div>
+
+<h2>Venue Usage</h2>
+<div id="venues">Loading...</div>
+
+<h2>Peak Times</h2>
+<div id="peak">Loading...</div>
+
+<script>
+async function loadAnalytics() {
+  const token = localStorage.getItem("token"); // 如果你们用 JWT
+
+  // Booking stats
+  const statsRes = await fetch("/api/analytics/bookings/stats", {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const stats = await statsRes.json();
+
+  document.getElementById("stats").innerHTML = `
+    Total: ${stats.total_bookings}<br>
+    Confirmed: ${stats.confirmed_bookings}<br>
+    Cancelled: ${stats.cancelled_bookings}
+  `;
+
+  // Venue usage
+  const venueRes = await fetch("/api/analytics/venues/usage", {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const venues = await venueRes.json();
+
+  document.getElementById("venues").innerHTML =
+    venues.map(v => `${v.venue_name}: ${v.booking_count}`).join("<br>");
+
+  // Peak times
+  const peakRes = await fetch("/api/analytics/peak-times", {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const peak = await peakRes.json();
+fetch("/api/analytics/bookings/stats")
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("stats").innerText = data.total_bookings;
+  });
+  document.getElementById("peak").innerHTML =
+    peak.hourly_peak_times.map(p => `${p.hour}:00 → ${p.booking_count}`).join("<br>");
+}
+
+loadAnalytics();
+</script>

@@ -10,10 +10,10 @@ A multi-tenant venue and equipment booking system for CUHK student societies. Ea
 
 | SID | Name | GitHub |
 |-----|------|--------|
-| 1155192617 | Hung Hei Chit | [FCabcasd](https://github.com/FCabcasd) |
+| 1155192617 | Hung Hei Chit | [quo-dt](https://github.com/quo-dt) |
 | 1155173771 | Zhiyu Wang | [Oliver-Wo](https://github.com/Oliver-Wo) |
 | 1155264327 | Geyu Liu | [LGY](https://github.com/LGY) |
-| 1155213219 | Cheung Ka Tsun | |
+| 1155213219 | Cheung Ka Tsun | [FCabcasd](https://github.com/FCabcasd) |
 | 1155212179 | Pang Enoch | [PangEnoch](https://github.com/PangEnoch) |
 
 ## Tech Stack

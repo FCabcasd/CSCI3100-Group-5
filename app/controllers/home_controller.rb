@@ -4,4 +4,6 @@ class HomeController < ApplicationController
 
   def menu
   end
+  def analytics
+  end
 end
