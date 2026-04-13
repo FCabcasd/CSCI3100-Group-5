@@ -25,6 +25,7 @@ class BookingService
 
     booking.save!
     BookingMailer.booking_confirmation(booking).deliver_later
+    broadcast_booking_event(booking, "booking_created")
     booking
   end
 
@@ -32,9 +33,13 @@ class BookingService
     equipment_ids = params.delete(:equipment_ids) || []
     pattern = params[:recurrence_pattern]
     end_date = params[:recurrence_end_date].to_date
-    current_date = params[:start_time].to_date
-    start_hour = params[:start_time]
-    end_hour = params[:end_time]
+
+    start_time = params[:start_time].is_a?(String) ? Time.zone.parse(params[:start_time]) : params[:start_time]
+    end_time = params[:end_time].is_a?(String) ? Time.zone.parse(params[:end_time]) : params[:end_time]
+
+    current_date = start_time.to_date
+    start_hour = start_time
+    end_hour = end_time
 
     delta = case pattern
     when "daily"  then 1.day
@@ -45,57 +50,60 @@ class BookingService
 
     bookings = []
 
-    while current_date <= end_date
-      instance_start = current_date.to_datetime.change(hour: start_hour.hour, min: start_hour.min)
-      instance_end   = current_date.to_datetime.change(hour: end_hour.hour, min: end_hour.min)
+    ActiveRecord::Base.transaction do
+      while current_date <= end_date
+        instance_start = current_date.to_datetime.change(hour: start_hour.hour, min: start_hour.min)
+        instance_end   = current_date.to_datetime.change(hour: end_hour.hour, min: end_hour.min)
 
-      available, _ = ConflictDetectionService.validate_booking_times(
-        venue_id: params[:venue_id],
-        equipment_ids: equipment_ids,
-        start_time: instance_start,
-        end_time: instance_end
-      )
-
-      if available
-        booking = user.bookings.build(
+        available, _ = ConflictDetectionService.validate_booking_times(
           venue_id: params[:venue_id],
-          title: params[:title],
-          description: params[:description],
+          equipment_ids: equipment_ids,
           start_time: instance_start,
-          end_time: instance_end,
-          contact_person: params[:contact_person],
-          contact_email: params[:contact_email],
-          contact_phone: params[:contact_phone],
-          estimated_attendance: params[:estimated_attendance],
-          special_requirements: params[:special_requirements],
-          is_recurring: true,
-          recurrence_pattern: pattern,
-          status: :pending
+          end_time: instance_end
         )
 
-        if equipment_ids.present?
-          equipment = Equipment.where(id: equipment_ids)
-          booking.equipment_list = equipment
+        if available
+          booking = user.bookings.build(
+            venue_id: params[:venue_id],
+            title: params[:title],
+            description: params[:description],
+            start_time: instance_start,
+            end_time: instance_end,
+            contact_person: params[:contact_person],
+            contact_email: params[:contact_email],
+            contact_phone: params[:contact_phone],
+            estimated_attendance: params[:estimated_attendance],
+            special_requirements: params[:special_requirements],
+            is_recurring: true,
+            recurrence_pattern: pattern,
+            status: :pending
+          )
+
+          if equipment_ids.present?
+            equipment = Equipment.where(id: equipment_ids)
+            booking.equipment_list = equipment
+          end
+
+          booking.save!
+          bookings << booking
         end
 
-        booking.save!
-        bookings << booking
+        current_date += delta
       end
-
-      current_date += delta
     end
 
     BookingMailer.recurring_booking_confirmation(bookings).deliver_later if bookings.any?
+    bookings.each { |b| broadcast_booking_event(b, "booking_created") }
     bookings
   end
 
-  def self.cancel_booking(booking:, reason: nil)
+  def self.cancel_booking(booking:, reason: nil, admin_override: false)
     now = Time.current
     hours_before = (booking.start_time - now) / 1.hour
 
     venue = booking.venue
     tenant = venue.tenant
-    is_late = hours_before < tenant.cancellation_deadline_hours
+    is_late = !admin_override && hours_before < tenant.cancellation_deadline_hours
 
     booking.update!(
       status: :cancelled,
@@ -115,18 +123,22 @@ class BookingService
     if is_late
       user = booking.user
       points_deduction = tenant.point_deduction_per_late_cancel
-      user.update!(points: user.points - points_deduction)
-      cancellation.update!(points_deducted: points_deduction)
 
-      PointDeduction.create!(
-        user: user,
-        booking: booking,
-        points: points_deduction,
-        reason: "late_cancellation"
-      )
+      ActiveRecord::Base.transaction do
+        user.update!(points: user.points - points_deduction)
+        cancellation.update!(points_deducted: points_deduction)
+
+        PointDeduction.create!(
+          user: user,
+          booking: booking,
+          points: points_deduction,
+          reason: "late_cancellation"
+        )
+      end
     end
 
     BookingMailer.booking_cancellation(booking, cancellation).deliver_later
+    broadcast_booking_event(booking, "booking_cancelled")
 
     # Try to promote a pending booking
     promoted = promote_pending_booking(booking)
@@ -152,10 +164,31 @@ class BookingService
       if available
         candidate.update!(status: :confirmed)
         BookingMailer.booking_confirmed_by_admin(candidate).deliver_later
+        broadcast_booking_event(candidate, "booking_promoted")
         return candidate
       end
     end
 
     nil
+  end
+
+  def self.broadcast_booking_event(booking, event_type)
+    BookingChannel.broadcast_to(
+      booking.user,
+      {
+        type: event_type,
+        booking: {
+          id: booking.id,
+          title: booking.title,
+          status: booking.status,
+          venue_id: booking.venue_id,
+          start_time: booking.start_time,
+          end_time: booking.end_time
+        },
+        timestamp: Time.current.iso8601
+      }
+    )
+  rescue => e
+    Rails.logger.warn("ActionCable broadcast failed: #{e.message}")
   end
 end

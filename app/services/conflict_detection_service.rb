@@ -15,6 +15,9 @@ class ConflictDetectionService
   end
 
   def self.check_equipment_availability(equipment_id:, start_time:, end_time:, exclude_booking_id: nil)
+    equipment = Equipment.find_by(id: equipment_id)
+    return [ false, "Equipment not found" ] unless equipment
+
     scope = Booking.joins(:equipment_bookings)
                    .where(equipment_bookings: { equipment_id: equipment_id })
                    .where(status: [ :pending, :confirmed ])
@@ -22,8 +25,9 @@ class ConflictDetectionService
 
     scope = scope.where.not(id: exclude_booking_id) if exclude_booking_id
 
-    if scope.exists?
-      [ false, "Equipment is already booked at this time" ]
+    booked_count = scope.count
+    if booked_count >= equipment.quantity
+      [ false, "Equipment is already fully booked at this time" ]
     else
       [ true, nil ]
     end

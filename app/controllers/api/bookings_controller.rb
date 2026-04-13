@@ -71,8 +71,32 @@ module Api
 
       booking.update!(status: :confirmed)
       BookingMailer.booking_confirmed_by_admin(booking).deliver_later
+      BookingService.broadcast_booking_event(booking, "booking_confirmed")
 
       render json: { success: true, message: "Booking confirmed", booking: booking_response(booking) }
+    rescue ActiveRecord::RecordNotFound
+      render json: { error: "Booking not found" }, status: :not_found
+    end
+
+    def check_in
+      booking = Booking.find(params[:id])
+
+      unless booking.user_id == @current_user.id || @current_user.admin? || @current_user.tenant_admin?
+        return render json: { error: "Access denied" }, status: :forbidden
+      end
+
+      unless booking.confirmed?
+        return render json: { error: "Only confirmed bookings can be checked in" }, status: :bad_request
+      end
+
+      if booking.checked_in_at.present?
+        return render json: { error: "Already checked in" }, status: :bad_request
+      end
+
+      booking.update!(checked_in_at: Time.current)
+      BookingService.broadcast_booking_event(booking, "booking_checked_in")
+
+      render json: { success: true, message: "Checked in successfully", booking: booking_response(booking).merge(checked_in_at: booking.checked_in_at) }
     rescue ActiveRecord::RecordNotFound
       render json: { error: "Booking not found" }, status: :not_found
     end

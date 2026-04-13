@@ -21,6 +21,12 @@ module Api
     end
 
     def check_conflicts
+      venue = Venue.find_by(id: params[:venue_id])
+      if venue && venue.tenant_id != @current_user.tenant_id
+        render json: { error: "Access denied" }, status: :forbidden
+        return
+      end
+
       result = ai_service.check_booking_conflicts(
         venue_id: params[:venue_id],
         start_time: params[:start_time],

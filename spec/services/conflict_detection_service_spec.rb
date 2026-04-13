@@ -76,7 +76,8 @@ RSpec.describe ConflictDetectionService do
       expect(available).to be true
     end
 
-    it 'returns false when equipment is booked' do
+    it 'returns false when equipment is fully booked' do
+      equipment.update!(quantity: 1)
       booking = create(:booking,
         user: user, venue: venue, status: :confirmed,
         start_time: 1.day.from_now.change(hour: 10),
@@ -90,6 +91,22 @@ RSpec.describe ConflictDetectionService do
         end_time: 1.day.from_now.change(hour: 13)
       )
       expect(available).to be false
+    end
+
+    it 'returns true when equipment has remaining quantity' do
+      booking = create(:booking,
+        user: user, venue: venue, status: :confirmed,
+        start_time: 1.day.from_now.change(hour: 10),
+        end_time: 1.day.from_now.change(hour: 12)
+      )
+      EquipmentBooking.create!(booking: booking, equipment: equipment)
+
+      available, _ = described_class.check_equipment_availability(
+        equipment_id: equipment.id,
+        start_time: 1.day.from_now.change(hour: 11),
+        end_time: 1.day.from_now.change(hour: 13)
+      )
+      expect(available).to be true
     end
   end
 

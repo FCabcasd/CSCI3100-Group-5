@@ -79,4 +79,82 @@ RSpec.describe "Api::Bookings", type: :request do
       expect(response).to have_http_status(:forbidden)
     end
   end
+
+  describe "GET /api/bookings/:id" do
+    let(:booking) { create(:booking, user: user, venue: venue) }
+
+    it "returns booking details" do
+      get "/api/bookings/#{booking.id}", headers: headers
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)
+      expect(json["id"]).to eq(booking.id)
+      expect(json["venue"]).to be_present
+      expect(json["user"]).to be_present
+    end
+
+    it "returns not_found for non-existent booking" do
+      get "/api/bookings/99999", headers: headers
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "returns forbidden for other user's booking" do
+      other_user = create(:user, tenant: tenant)
+      other_booking = create(:booking, user: other_user, venue: venue)
+      get "/api/bookings/#{other_booking.id}", headers: headers
+      expect(response).to have_http_status(:forbidden)
+    end
+
+    it "allows admin to view any booking" do
+      admin = create(:user, :admin, tenant: tenant)
+      admin_token = JsonWebToken.encode(sub: admin.id)
+      other_user = create(:user, tenant: tenant)
+      other_booking = create(:booking, user: other_user, venue: venue)
+      get "/api/bookings/#{other_booking.id}", headers: { "Authorization" => "Bearer #{admin_token}" }
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
+  describe "POST /api/bookings/create_recurring" do
+    let(:start_time) { 2.days.from_now.change(hour: 14) }
+    let(:recurring_params) do
+      {
+        title: "Weekly Standup",
+        venue_id: venue.id,
+        start_time: start_time.iso8601,
+        end_time: 2.days.from_now.change(hour: 15).iso8601,
+        contact_person: "Jane",
+        contact_email: "jane@example.com",
+        contact_phone: "87654321",
+        recurrence_pattern: "weekly",
+        recurrence_end_date: (start_time + 3.weeks).to_date.to_s,
+        equipment_ids: []
+      }
+    end
+
+    it "creates recurring bookings" do
+      post "/api/bookings/create_recurring", params: recurring_params, headers: headers, as: :json
+      expect(response).to have_http_status(:created)
+      json = JSON.parse(response.body)
+      expect(json.length).to be >= 2
+    end
+
+    it "returns bad request for invalid pattern" do
+      recurring_params[:recurrence_pattern] = "biweekly"
+      post "/api/bookings/create_recurring", params: recurring_params, headers: headers, as: :json
+      expect(response).to have_http_status(:bad_request)
+    end
+  end
+
+  describe "POST /api/bookings/:id/cancel edge cases" do
+    it "returns not_found for non-existent booking" do
+      post "/api/bookings/99999/cancel", headers: headers, as: :json
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "returns bad_request for already cancelled booking" do
+      booking = create(:booking, user: user, venue: venue, status: :cancelled)
+      post "/api/bookings/#{booking.id}/cancel", headers: headers, as: :json
+      expect(response).to have_http_status(:bad_request)
+    end
+  end
 end

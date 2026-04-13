@@ -56,5 +56,9 @@ module Api
         model.where(tenant_id: current_tenant_id)
       end
     end
+
+    def sanitize_sql_like(string)
+      ActiveRecord::Base.sanitize_sql_like(string)
+    end
   end
 end
