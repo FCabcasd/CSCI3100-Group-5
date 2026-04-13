@@ -57,6 +57,7 @@ document.addEventListener("turbo:load", () => {
   const askBtn = document.getElementById("ai-ask-btn");
   const input = document.getElementById("ai-question");
   const messages = document.getElementById("ai-messages");
+  let chatHistory = [];
 
   if (token) {
     fetch("/api/auth/me", { headers: { Authorization: "Bearer " + token } })
@@ -97,13 +98,17 @@ document.addEventListener("turbo:load", () => {
     fetch('/api/ai/ask', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ question: q })
+      body: JSON.stringify({ question: q, history: chatHistory })
     })
       .then(r => r.json())
       .then(data => {
         document.getElementById(thinkingId)?.remove();
         document.querySelector('.ai-mascot')?.classList.remove('ai-thinking-bounce');
-        addMsg('bot', data.answer || data.result || t('ai_no_answer'));
+        const answer = data.answer || data.result || t('ai_no_answer');
+        addMsg('bot', answer);
+        chatHistory.push({ role: 'user', content: q });
+        chatHistory.push({ role: 'bot', content: answer });
+        if (chatHistory.length > 40) chatHistory = chatHistory.slice(-40);
       })
       .catch(() => {
         document.getElementById(thinkingId)?.remove();

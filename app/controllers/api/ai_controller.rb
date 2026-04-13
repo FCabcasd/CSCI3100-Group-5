@@ -1,13 +1,18 @@
 module Api
   class AiController < BaseController
     def ask
+      history = Array(params[:history]).map do |msg|
+        { role: msg[:role].to_s, content: msg[:content].to_s }
+      end.last(20)
+
       result = ai_service.answer_question(
         question: params[:question],
         user_context: {
           name: @current_user.full_name || @current_user.username,
           points: @current_user.points,
           role: @current_user.role
-        }
+        },
+        history: history
       )
       render json: result
     end

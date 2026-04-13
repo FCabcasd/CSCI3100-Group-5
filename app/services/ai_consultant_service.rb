@@ -48,7 +48,7 @@ class AiConsultantService
     @api_key.present?
   end
 
-  def answer_question(question:, user_context: {})
+  def answer_question(question:, user_context: {}, history: [])
     return unavailable_response unless available?
 
     context_msg = ""
@@ -56,9 +56,22 @@ class AiConsultantService
       context_msg = "\n\nUser Context:\n- User: #{user_context[:name]}\n- Points: #{user_context[:points]}\n- Role: #{user_context[:role]}"
     end
 
-    prompt = "#{BOOKING_POLICY}#{context_msg}\n\nQuestion: #{question}"
-    result = call_gemini(prompt)
-    result
+    contents = []
+
+    # System prompt as first user message
+    contents << { role: "user", parts: [ { text: "#{BOOKING_POLICY}#{context_msg}\n\nPlease acknowledge you understand these rules and are ready to help." } ] }
+    contents << { role: "model", parts: [ { text: "I understand the CUHK Venue & Equipment Booking System rules. I'm ready to help!" } ] }
+
+    # Previous conversation history
+    history.each do |msg|
+      role = msg[:role] == "user" ? "user" : "model"
+      contents << { role: role, parts: [ { text: msg[:content].to_s } ] }
+    end
+
+    # Current question
+    contents << { role: "user", parts: [ { text: question } ] }
+
+    call_gemini_multi(contents)
   end
 
   def recommend_venues(requirements:, tenant_id: nil)
@@ -94,9 +107,13 @@ class AiConsultantService
   private
 
   def call_gemini(prompt)
+    call_gemini_multi([ { role: "user", parts: [ { text: prompt } ] } ])
+  end
+
+  def call_gemini_multi(contents)
     uri = URI("#{GEMINI_URL}?key=#{@api_key}")
     body = {
-      contents: [ { parts: [ { text: prompt } ] } ],
+      contents: contents,
       generationConfig: { maxOutputTokens: 500, temperature: 0.7 }
     }
 
