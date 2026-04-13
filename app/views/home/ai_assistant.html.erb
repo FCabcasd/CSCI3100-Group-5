@@ -1,0 +1,128 @@
+<div class="dashboard-page">
+  <nav class="dashboard-nav">
+    <a href="/menu" class="brand" style="text-decoration:none;color:#fff">
+      <i class="bi bi-building"></i> <span data-i18n="brand">CUHK Venue Booking</span>
+    </a>
+    <div class="user-info">
+      <span id="user-greeting"></span>
+      <button class="btn-logout" onclick="toggleLang()" style="font-weight:600;">EN</button>
+      <a href="/menu" class="btn-logout"><i class="bi bi-grid"></i> <span data-i18n="menu">Menu</span></a>
+      <button class="btn-logout" id="logout-btn"><i class="bi bi-box-arrow-right"></i> <span data-i18n="logout">Logout</span></button>
+    </div>
+  </nav>
+
+  <div class="page-container" style="max-width:720px;">
+    <!-- Cute mascot header -->
+    <div class="ai-hero">
+      <div class="ai-mascot">
+        <div class="ai-mascot-face">
+          <div class="ai-eye ai-eye-l"></div>
+          <div class="ai-eye ai-eye-r"></div>
+          <div class="ai-mouth"></div>
+        </div>
+        <div class="ai-mascot-glow"></div>
+      </div>
+      <h1 class="ai-hero-title"><span data-i18n="ai_title">AI Consultant</span></h1>
+      <p class="ai-hero-sub" data-i18n="ai_intro">Ask me anything about venue booking!</p>
+    </div>
+
+    <!-- Quick suggestion chips -->
+    <div class="ai-chips">
+      <button class="ai-chip" onclick="fillQuestion(this.textContent)"><i class="bi bi-question-circle"></i> <span data-i18n="ai_q1">How to book a venue?</span></button>
+      <button class="ai-chip" onclick="fillQuestion(this.textContent)"><i class="bi bi-geo-alt"></i> <span data-i18n="ai_q2">Recommend a venue for 30 people</span></button>
+      <button class="ai-chip" onclick="fillQuestion(this.textContent)"><i class="bi bi-clock"></i> <span data-i18n="ai_q3">What happens if I cancel late?</span></button>
+      <button class="ai-chip" onclick="fillQuestion(this.textContent)"><i class="bi bi-star"></i> <span data-i18n="ai_q4">How do points work?</span></button>
+    </div>
+
+    <!-- Chat area -->
+    <div class="ai-chat-container">
+      <div id="ai-messages" class="ai-messages">
+        <div class="ai-msg ai-msg-bot">
+          <div class="ai-msg-avatar"><i class="bi bi-robot"></i></div>
+          <div class="ai-msg-bubble" data-i18n="ai_welcome">Hi there! I'm your booking assistant. Ask me anything about venues, equipment, or booking rules!</div>
+        </div>
+      </div>
+      <div class="ai-input-row">
+        <input type="text" id="ai-question" class="ai-input" data-i18n-placeholder="ai_placeholder" placeholder="Type your question..." autocomplete="off">
+        <button id="ai-ask-btn" class="ai-send-btn"><i class="bi bi-send-fill"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("turbo:load", () => {
+  if (!document.getElementById("ai-ask-btn")) return;
+  const token = localStorage.getItem("access_token");
+  const askBtn = document.getElementById("ai-ask-btn");
+  const input = document.getElementById("ai-question");
+  const messages = document.getElementById("ai-messages");
+
+  if (token) {
+    fetch("/api/auth/me", { headers: { Authorization: "Bearer " + token } })
+      .then(r => { if (!r.ok) throw 0; return r.json(); })
+      .then(u => { document.getElementById("user-greeting").textContent = t('hi') + (u.full_name || u.username); })
+      .catch(() => {});
+  }
+  document.getElementById("logout-btn").onclick = () => {
+    localStorage.removeItem("access_token"); localStorage.removeItem("refresh_token");
+    window.location.href = "/";
+  };
+
+  window.fillQuestion = function(text) {
+    input.value = text.replace(/^[\s\u200b]+/, '').replace(/^[^\w\u4e00-\u9fff]+/, '').trim();
+    input.focus();
+  };
+
+  askBtn.onclick = askAI;
+  input.onkeydown = e => { if (e.key === 'Enter') askAI(); };
+
+  function askAI() {
+    const q = input.value.trim();
+    if (!q) return;
+    addMsg('user', q);
+    input.value = '';
+
+    const thinkingId = 'thinking-' + Date.now();
+    messages.insertAdjacentHTML('beforeend',
+      '<div class="ai-msg ai-msg-bot" id="' + thinkingId + '">' +
+        '<div class="ai-msg-avatar"><i class="bi bi-robot"></i></div>' +
+        '<div class="ai-msg-bubble ai-thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>' +
+      '</div>');
+    messages.scrollTop = messages.scrollHeight;
+
+    // Add bounce animation to mascot while thinking
+    document.querySelector('.ai-mascot')?.classList.add('ai-thinking-bounce');
+
+    fetch('/api/ai/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ question: q })
+    })
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById(thinkingId)?.remove();
+        document.querySelector('.ai-mascot')?.classList.remove('ai-thinking-bounce');
+        addMsg('bot', data.answer || data.result || t('ai_no_answer'));
+      })
+      .catch(() => {
+        document.getElementById(thinkingId)?.remove();
+        document.querySelector('.ai-mascot')?.classList.remove('ai-thinking-bounce');
+        addMsg('bot', t('ai_error'));
+      });
+  }
+
+  function addMsg(role, text) {
+    const cls = role === 'user' ? 'ai-msg-user' : 'ai-msg-bot';
+    const avatar = role === 'user' ? '<i class="bi bi-person-fill"></i>' : '<i class="bi bi-robot"></i>';
+    messages.insertAdjacentHTML('beforeend',
+      '<div class="ai-msg ' + cls + '">' +
+        '<div class="ai-msg-avatar">' + avatar + '</div>' +
+        '<div class="ai-msg-bubble">' + esc(text) + '</div>' +
+      '</div>');
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function esc(s) { return String(s||"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
+});
+</script>

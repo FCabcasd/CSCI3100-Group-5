@@ -1,6 +1,19 @@
 module Api
   class EquipmentController < BaseController
+    skip_before_action :authorize_request, only: [ :browse ]
     before_action :require_tenant_admin!, only: [ :create, :update, :destroy ]
+
+    # Public browse — no tenant scoping, all active equipment
+    def browse
+      equipment = Equipment.where(is_active: true)
+      if params[:q].present?
+        q = "%#{sanitize_sql_like(params[:q].to_s.strip)}%"
+        equipment = equipment.where("name LIKE :q OR description LIKE :q OR equipment_type LIKE :q", q: q)
+      end
+      equipment = equipment.offset(params[:skip].to_i)
+                           .limit([ params.fetch(:limit, 20).to_i, 100 ].min)
+      render json: equipment.map { |e| equipment_response(e) }
+    end
 
     def search
       query = params[:q].to_s.strip
@@ -85,12 +98,14 @@ module Api
     end
 
     def equipment_response(eq)
+      active_booked = eq.bookings.where(status: [:pending, :confirmed]).where("end_time > ?", Time.current).count
       {
         id: eq.id,
         tenant_id: eq.tenant_id,
         name: eq.name,
         description: eq.description,
         quantity: eq.quantity,
+        available_quantity: [eq.quantity - active_booked, 0].max,
         equipment_type: eq.equipment_type,
         status: eq.status,
         image_url: eq.image_url,

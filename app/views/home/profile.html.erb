@@ -1,180 +1,105 @@
-<div class="profile-page">
-  <div class="profile-header">
-    <div>
-      <h1>My Profile</h1>
-      <p class="subtitle">View your account information and current status.</p>
+<div class="dashboard-page">
+  <nav class="dashboard-nav">
+    <a href="/menu" class="brand" style="text-decoration:none;color:#fff">
+      <i class="bi bi-building"></i> <span data-i18n="brand">CUHK Venue Booking</span>
+    </a>
+    <div class="user-info">
+      <span id="user-greeting"></span>
+      <button class="btn-logout" onclick="toggleLang()" style="font-weight:600;">EN</button>
+      <a href="/menu" class="btn-logout"><i class="bi bi-grid"></i> <span data-i18n="menu">Menu</span></a>
+      <button class="btn-logout" id="logout-btn"><i class="bi bi-box-arrow-right"></i> <span data-i18n="logout">Logout</span></button>
     </div>
-    <div class="profile-actions">
-      <a href="/menu" class="secondary-btn">Back to Menu</a>
-      <button class="danger-btn" onclick="logout()">Log Out</button>
+  </nav>
+
+  <div class="page-container" style="max-width:680px;">
+    <div class="page-header">
+      <h1><i class="bi bi-person-circle"></i> <span data-i18n="my_profile">My Profile</span></h1>
+      <p data-i18n="profile_sub">View your account information and current status</p>
+    </div>
+
+    <div class="profile-card-styled">
+      <div class="profile-avatar-row" id="profile-avatar-row">
+        <div class="profile-avatar"><i class="bi bi-person-fill"></i></div>
+        <div>
+          <div class="profile-name" id="profile-name">--</div>
+          <div class="profile-role" id="profile-role">--</div>
+        </div>
+      </div>
+      <div id="profile-details" class="profile-details">
+        <span class="text-muted" data-i18n="loading">Loading...</span>
+      </div>
     </div>
   </div>
-
-  <section class="profile-card">
-    <div id="profile" class="profile-content">Loading...</div>
-  </section>
 </div>
 
-<style>
-  .profile-page {
-    max-width: 900px;
-    margin: 40px auto;
-    padding: 0 20px 40px;
-    font-family: Arial, sans-serif;
-    color: #1f2937;
-  }
-
-  .profile-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 28px;
-  }
-
-  .profile-header h1 {
-    margin: 0;
-    font-size: 40px;
-    line-height: 1.1;
-  }
-
-  .subtitle {
-    margin-top: 8px;
-    color: #6b7280;
-    font-size: 15px;
-  }
-
-  .profile-actions {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-  }
-
-  .secondary-btn,
-  .danger-btn {
-    border: none;
-    padding: 10px 18px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    text-decoration: none;
-    display: inline-block;
-  }
-
-  .secondary-btn {
-    background: #2563eb;
-    color: white;
-  }
-
-  .secondary-btn:hover {
-    background: #1d4ed8;
-  }
-
-  .danger-btn {
-    background: #dc2626;
-    color: white;
-  }
-
-  .danger-btn:hover {
-    background: #b91c1c;
-  }
-
-  .profile-card {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 14px;
-    padding: 24px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
-  }
-
-  .profile-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .profile-list li {
-    padding: 12px 0;
-    border-bottom: 1px solid #f3f4f6;
-  }
-
-  .profile-list li:last-child {
-    border-bottom: none;
-  }
-
-  .label {
-    font-weight: 700;
-    color: #111827;
-  }
-
-  .muted {
-    color: #6b7280;
-    font-style: italic;
-  }
-
-  .error-state {
-    color: #b91c1c;
-    font-weight: 600;
-  }
-
-  @media (max-width: 768px) {
-    .profile-header {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .profile-actions {
-      width: 100%;
-      flex-wrap: wrap;
-    }
-  }
-</style>
-
 <script>
-  async function loadProfile() {
-    const token = localStorage.getItem("token");
-    const profileEl = document.getElementById("profile");
+document.addEventListener("turbo:load", () => {
+  if (!document.getElementById("profile-details")) return;
+  const token = localStorage.getItem("access_token");
 
+  document.getElementById("logout-btn").onclick = () => {
+    localStorage.removeItem("access_token"); localStorage.removeItem("refresh_token");
+    window.location.href = "/";
+  };
+
+  async function loadProfile() {
     if (!token) {
-      profileEl.innerHTML = `<div class="muted">No token found. Please log in first.</div>`;
+      document.getElementById("profile-details").innerHTML = '<span class="text-muted">' + t('no_token') + '</span>';
       return;
     }
-
     try {
-      const response = await fetch("/api/auth/me", {
-        headers: {
-          "Authorization": "Bearer " + token,
-          "Accept": "application/json"
-        }
-      });
+      const r = await fetch("/api/auth/me", { headers: { Authorization: "Bearer " + token } });
+      const data = await r.json();
+      if (!r.ok) { document.getElementById("profile-details").innerHTML = '<span class="text-danger">' + (data.error || t('profile_fail')) + '</span>'; return; }
 
-      const data = await response.json();
+      document.getElementById("user-greeting").textContent = t('hi') + (data.full_name || data.username);
+      document.getElementById("profile-name").textContent = data.full_name || data.username;
+      document.getElementById("profile-role").textContent = data.role;
 
-      if (!response.ok) {
-        profileEl.innerHTML = `<div class="error-state">${data.error || "Failed to load profile"}</div>`;
-        return;
-      }
-
-      profileEl.innerHTML = `
-        <ul class="profile-list">
-          <li><span class="label">Username:</span> ${data.username}</li>
-          <li><span class="label">Full name:</span> ${data.full_name}</li>
-          <li><span class="label">Email:</span> ${data.email}</li>
-          <li><span class="label">Role:</span> ${data.role}</li>
-          <li><span class="label">Tenant ID:</span> ${data.tenant_id ?? "N/A"}</li>
-          <li><span class="label">Points:</span> ${data.points}</li>
-        </ul>
+      document.getElementById("profile-details").innerHTML = `
+        <div class="profile-detail-row">
+          <div class="profile-detail-icon" style="background:#f0e6ff;color:#7b2d8e;"><i class="bi bi-person-badge-fill"></i></div>
+          <div>
+            <div class="profile-detail-label">${t('lbl_username')}</div>
+            <div class="profile-detail-value">${esc(data.username)}</div>
+          </div>
+        </div>
+        <div class="profile-detail-row">
+          <div class="profile-detail-icon" style="background:#e8f4fd;color:#0d6efd;"><i class="bi bi-envelope-fill"></i></div>
+          <div>
+            <div class="profile-detail-label">${t('lbl_email')}</div>
+            <div class="profile-detail-value">${esc(data.email)}</div>
+          </div>
+        </div>
+        <div class="profile-detail-row">
+          <div class="profile-detail-icon" style="background:#e6f7ee;color:#198754;"><i class="bi bi-person-fill"></i></div>
+          <div>
+            <div class="profile-detail-label">${t('lbl_fullname')}</div>
+            <div class="profile-detail-value">${esc(data.full_name || '-')}</div>
+          </div>
+        </div>
+        <div class="profile-detail-row">
+          <div class="profile-detail-icon" style="background:#fff3e0;color:#e67e22;"><i class="bi bi-building"></i></div>
+          <div>
+            <div class="profile-detail-label">${t('lbl_tenant')}</div>
+            <div class="profile-detail-value">${data.tenant_id ?? t('na')}</div>
+          </div>
+        </div>
+        <div class="profile-detail-row">
+          <div class="profile-detail-icon" style="background:#f0e6ff;color:#7b2d8e;"><i class="bi bi-star-fill"></i></div>
+          <div>
+            <div class="profile-detail-label">${t('lbl_points')}</div>
+            <div class="profile-detail-value" style="font-size:1.2rem;font-weight:700;color:#7b2d8e;">${data.points}</div>
+          </div>
+        </div>
       `;
-    } catch (error) {
-      profileEl.innerHTML = `<div class="error-state">Failed to load profile</div>`;
-      console.error(error);
+    } catch(e) {
+      document.getElementById("profile-details").innerHTML = '<span class="text-danger">' + t('profile_fail') + '</span>';
     }
   }
 
-  function logout() {
-    localStorage.removeItem("token");
-    window.location.href = "/";
-  }
-
+  function esc(s) { return String(s||"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
+  document.addEventListener("langchange", () => { loadProfile(); });
   loadProfile();
+});
 </script>

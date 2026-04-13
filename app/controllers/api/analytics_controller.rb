@@ -12,7 +12,8 @@ module Api
         confirmed_bookings: bookings.confirmed.count,
         cancelled_bookings: bookings.cancelled.count,
         completed_bookings: bookings.completed.count,
-        no_show_bookings: bookings.no_show.count
+        no_show_bookings: bookings.no_show.count,
+        rejected_bookings: bookings.rejected.count
       }
     end
 

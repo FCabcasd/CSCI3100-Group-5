@@ -1,4 +1,11 @@
+require "net/http"
+require "json"
+require "uri"
+
 class AiConsultantService
+  GEMINI_MODEL = "gemini-2.5-flash-lite"
+  GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/#{GEMINI_MODEL}:generateContent".freeze
+
   BOOKING_POLICY = <<~POLICY
     You are a helpful assistant for the CUHK Venue & Equipment Booking System.
 
@@ -34,13 +41,11 @@ class AiConsultantService
   POLICY
 
   def initialize
-    @client = nil
-    api_key = Rails.application.credentials.dig(:openai, :api_key) || ENV["OPENAI_API_KEY"]
-    @client = OpenAI::Client.new(access_token: api_key) if api_key.present?
+    @api_key = ENV["GEMINI_API_KEY"]
   end
 
   def available?
-    @client.present?
+    @api_key.present?
   end
 
   def answer_question(question:, user_context: {})
@@ -51,19 +56,9 @@ class AiConsultantService
       context_msg = "\n\nUser Context:\n- User: #{user_context[:name]}\n- Points: #{user_context[:points]}\n- Role: #{user_context[:role]}"
     end
 
-    response = @client.chat(parameters: {
-      model: "gpt-3.5-turbo",
-      messages: [
-        { role: "system", content: BOOKING_POLICY },
-        { role: "user",   content: "#{context_msg}\n\nQuestion: #{question}" }
-      ],
-      max_tokens: 500,
-      temperature: 0.7
-    })
-
-    { success: true, answer: response.dig("choices", 0, "message", "content") }
-  rescue => e
-    { success: false, answer: "Sorry, I encountered an error: #{e.message}" }
+    prompt = "#{BOOKING_POLICY}#{context_msg}\n\nQuestion: #{question}"
+    result = call_gemini(prompt)
+    result
   end
 
   def recommend_venues(requirements:, tenant_id: nil)
@@ -73,21 +68,9 @@ class AiConsultantService
     venues = venues.where(tenant_id: tenant_id) if tenant_id
     venue_list = venues.map { |v| "- #{v.name}: Capacity #{v.capacity || 'N/A'}, Location: #{v.location || 'N/A'}, Features: #{v.features || {}}" }
 
-    prompt = "#{BOOKING_POLICY}\n\nAVAILABLE VENUES:\n#{venue_list.join("\n")}\n\nRecommend suitable venues."
-
-    response = @client.chat(parameters: {
-      model: "gpt-3.5-turbo",
-      messages: [
-        { role: "system", content: prompt },
-        { role: "user",   content: "Requirements: #{requirements}" }
-      ],
-      max_tokens: 500,
-      temperature: 0.7
-    })
-
-    { success: true, answer: response.dig("choices", 0, "message", "content"), venues_found: venues.count }
-  rescue => e
-    { success: false, answer: "Sorry, I encountered an error: #{e.message}" }
+    prompt = "#{BOOKING_POLICY}\n\nAVAILABLE VENUES:\n#{venue_list.join("\n")}\n\nRecommend suitable venues for: #{requirements}"
+    result = call_gemini(prompt)
+    result.merge(venues_found: venues.count)
   end
 
   def check_booking_conflicts(venue_id:, start_time:, end_time:)
@@ -103,31 +86,50 @@ class AiConsultantService
 
     conflict_info = conflicts.empty? ? "No conflicts found!" : "Conflicts with #{conflicts.count} existing booking(s)"
 
-    prompt = "#{BOOKING_POLICY}\n\nVenue: #{venue&.name}\n#{conflict_info}\n\nAnalyze this booking slot."
-
-    response = @client.chat(parameters: {
-      model: "gpt-3.5-turbo",
-      messages: [
-        { role: "system", content: prompt },
-        { role: "user",   content: "Is this time slot available?" }
-      ],
-      max_tokens: 400,
-      temperature: 0.7
-    })
-
-    {
-      success: true,
-      answer: response.dig("choices", 0, "message", "content"),
-      has_conflicts: conflicts.any?,
-      conflict_count: conflicts.count
-    }
-  rescue => e
-    { success: false, answer: "Sorry, I encountered an error: #{e.message}" }
+    prompt = "#{BOOKING_POLICY}\n\nVenue: #{venue&.name}\n#{conflict_info}\n\nAnalyze this booking slot. Is this time slot available?"
+    result = call_gemini(prompt)
+    result.merge(has_conflicts: conflicts.any?, conflict_count: conflicts.count)
   end
 
   private
 
+  def call_gemini(prompt)
+    uri = URI("#{GEMINI_URL}?key=#{@api_key}")
+    body = {
+      contents: [ { parts: [ { text: prompt } ] } ],
+      generationConfig: { maxOutputTokens: 500, temperature: 0.7 }
+    }
+
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    http.open_timeout = 10
+    http.read_timeout = 30
+
+    request = Net::HTTP::Post.new(uri)
+    request["Content-Type"] = "application/json"
+    request.body = body.to_json
+
+    response = http.request(request)
+    data = JSON.parse(response.body)
+
+    if response.code.to_i == 200
+      text = data.dig("candidates", 0, "content", "parts", 0, "text")
+      { success: true, answer: text || "No response generated." }
+    elsif response.code.to_i == 429
+      { success: false, answer: "AI service is temporarily rate-limited. Please wait a moment and try again." }
+    else
+      error_msg = data.dig("error", "message") || "Unknown error"
+      Rails.logger.error("Gemini API error: #{response.code} - #{error_msg}")
+      { success: false, answer: "AI service encountered an error. Please try again later." }
+    end
+  rescue Net::OpenTimeout, Net::ReadTimeout
+    { success: false, answer: "AI service timed out. Please try again." }
+  rescue => e
+    Rails.logger.error("Gemini API exception: #{e.message}")
+    { success: false, answer: "AI service encountered an error. Please try again later." }
+  end
+
   def unavailable_response
-    { success: false, answer: "AI consultant is not available. Please configure OPENAI_API_KEY." }
+    { success: false, answer: "AI consultant is not available. Please configure GEMINI_API_KEY." }
   end
 end

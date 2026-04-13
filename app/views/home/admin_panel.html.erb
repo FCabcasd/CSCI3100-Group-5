@@ -1,0 +1,164 @@
+<div class="dashboard-page">
+  <nav class="dashboard-nav">
+    <a href="/menu" class="brand" style="text-decoration:none;color:#fff">
+      <i class="bi bi-building"></i> <span data-i18n="brand">CUHK Venue Booking</span>
+    </a>
+    <div class="user-info">
+      <span id="user-greeting"></span>
+      <button class="btn-logout" onclick="toggleLang()" style="font-weight:600;">EN</button>
+      <a href="/menu" class="btn-logout"><i class="bi bi-grid"></i> <span data-i18n="menu">Menu</span></a>
+      <button class="btn-logout" id="logout-btn"><i class="bi bi-box-arrow-right"></i> <span data-i18n="logout">Logout</span></button>
+    </div>
+  </nav>
+
+  <div class="page-container">
+    <div class="page-header">
+      <h1><i class="bi bi-shield-lock"></i> <span data-i18n="admin_center">Admin Center</span></h1>
+      <p data-i18n="admin_sub">Manage users, venues, equipment, and bookings</p>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="admin-tab-nav">
+      <button class="admin-tab-btn active" onclick="showAdminTab('users',this)"><i class="bi bi-people"></i> <span data-i18n="admin_users">Users</span></button>
+      <button class="admin-tab-btn" onclick="showAdminTab('venues',this)"><i class="bi bi-building"></i> <span data-i18n="admin_venues">Venues</span></button>
+      <button class="admin-tab-btn" onclick="showAdminTab('equipment',this)"><i class="bi bi-hdd-network"></i> <span data-i18n="admin_equip">Equipment</span></button>
+      <button class="admin-tab-btn" onclick="showAdminTab('bookings',this)"><i class="bi bi-calendar-check"></i> <span data-i18n="admin_bookings">Bookings</span></button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="admin-content-card">
+      <div id="admin-users" class="admin-tab" style="display:none;">
+        <div id="admin-users-content"><span class="text-muted" data-i18n="loading">Loading...</span></div>
+      </div>
+      <div id="admin-venues" class="admin-tab" style="display:none;">
+        <div id="admin-venues-content"><span class="text-muted" data-i18n="loading">Loading...</span></div>
+      </div>
+      <div id="admin-equipment" class="admin-tab" style="display:none;">
+        <div id="admin-equipment-content"><span class="text-muted" data-i18n="loading">Loading...</span></div>
+      </div>
+      <div id="admin-bookings" class="admin-tab" style="display:none;">
+        <div id="admin-bookings-content"><span class="text-muted" data-i18n="loading">Loading...</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("turbo:load", () => {
+  if (!document.getElementById("admin-users")) return;
+  const token = localStorage.getItem("access_token");
+
+  if (token) {
+    fetch("/api/auth/me", { headers: { Authorization: "Bearer " + token } })
+      .then(r => { if (!r.ok) throw 0; return r.json(); })
+      .then(u => { document.getElementById("user-greeting").textContent = t('hi') + (u.full_name || u.username); })
+      .catch(() => {});
+  }
+  document.getElementById("logout-btn").onclick = () => {
+    localStorage.removeItem("access_token"); localStorage.removeItem("refresh_token");
+    window.location.href = "/";
+  };
+
+  let loaded = {};
+
+  window.showAdminTab = function(tab, btn) {
+    document.querySelectorAll('.admin-tab').forEach(t => t.style.display = 'none');
+    document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('admin-' + tab).style.display = 'block';
+    if (btn) btn.classList.add('active');
+    if (tab === 'users' && !loaded.users) { loadUsers(); loaded.users = true; }
+    if (tab === 'venues' && !loaded.venues) { loadVenues(); loaded.venues = true; }
+    if (tab === 'equipment' && !loaded.equipment) { loadEquipment(); loaded.equipment = true; }
+    if (tab === 'bookings' && !loaded.bookings) { loadBookings(); loaded.bookings = true; }
+  };
+
+  function loadUsers() {
+    fetch('/api/admin/users', { headers: { Authorization: "Bearer " + token } })
+      .then(r => r.json())
+      .then(data => {
+        const users = Array.isArray(data) ? data : (data.users || []);
+        document.getElementById('admin-users-content').innerHTML = users.length ?
+          '<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>ID</th><th>'+t('lbl_username')+'</th><th>'+t('lbl_email')+'</th><th>'+t('lbl_role')+'</th><th>'+t('lbl_points')+'</th></tr></thead><tbody>'+
+          users.map(u=>'<tr><td>'+u.id+'</td><td>'+esc(u.username)+'</td><td>'+esc(u.email)+'</td><td><span class="admin-role-badge">'+esc(u.role)+'</span></td><td>'+u.points+'</td></tr>').join('')+
+          '</tbody></table></div>' : '<span class="text-muted">'+t('no_data')+'</span>';
+      }).catch(() => { document.getElementById('admin-users-content').innerHTML = '<span class="text-danger">'+t('load_fail')+'</span>'; });
+  }
+
+  function loadVenues() {
+    fetch('/api/venues/browse?limit=100')
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('admin-venues-content').innerHTML = data.length ?
+          '<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>ID</th><th>'+t('lbl_name')+'</th><th>'+t('lbl_capacity')+'</th><th>'+t('lbl_location')+'</th></tr></thead><tbody>'+
+          data.map(v=>'<tr><td>'+v.id+'</td><td>'+esc(v.name)+'</td><td>'+v.capacity+'</td><td>'+esc(v.location||'-')+'</td></tr>').join('')+
+          '</tbody></table></div>' : '<span class="text-muted">'+t('no_data')+'</span>';
+      }).catch(() => { document.getElementById('admin-venues-content').innerHTML = '<span class="text-danger">'+t('load_fail')+'</span>'; });
+  }
+
+  function loadEquipment() {
+    fetch('/api/equipment/browse?limit=100')
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('admin-equipment-content').innerHTML = data.length ?
+          '<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>ID</th><th>'+t('lbl_name')+'</th><th>'+t('lbl_type')+'</th><th>'+t('lbl_qty')+'</th></tr></thead><tbody>'+
+          data.map(e=>'<tr><td>'+e.id+'</td><td>'+esc(e.name)+'</td><td>'+esc(e.equipment_type||'-')+'</td><td>'+e.available_quantity+' / '+e.quantity+'</td></tr>').join('')+
+          '</tbody></table></div>' : '<span class="text-muted">'+t('no_data')+'</span>';
+      }).catch(() => { document.getElementById('admin-equipment-content').innerHTML = '<span class="text-danger">'+t('load_fail')+'</span>'; });
+  }
+
+  function loadBookings() {
+    fetch('/api/bookings?limit=50', { headers: { Authorization: "Bearer " + token } })
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('admin-bookings-content').innerHTML = data.length ?
+          '<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>ID</th><th>'+t('lbl_title')+'</th><th>'+t('lbl_venue')+'</th><th>'+t('lbl_status')+'</th><th>'+t('lbl_time')+'</th><th>'+t('lbl_action')+'</th></tr></thead><tbody>'+
+          data.map(b=>'<tr><td>'+b.id+'</td><td>'+esc(b.title)+'</td><td>'+esc(b.venue?.name||'-')+'</td><td><span class="admin-status-badge" style="background:'+statusColor(b.status)+'">'+esc(b.status)+'</span></td><td>'+fmtDate(b.start_time)+'</td><td>'+bookingActions(b)+'</td></tr>').join('')+
+          '</tbody></table></div>' : '<span class="text-muted">'+t('no_data')+'</span>';
+      }).catch(() => { document.getElementById('admin-bookings-content').innerHTML = '<span class="text-danger">'+t('load_fail')+'</span>'; });
+  }
+
+  function bookingActions(b) {
+    if (b.status === 'pending') {
+      return '<button onclick="confirmBooking('+b.id+')" style="border:none;background:#198754;color:#fff;padding:4px 12px;border-radius:6px;font-size:.8rem;cursor:pointer;margin-right:4px;"><i class="bi bi-check-lg"></i> '+t('btn_approve')+'</button>' +
+             '<button onclick="rejectBooking('+b.id+')" style="border:none;background:#dc3545;color:#fff;padding:4px 12px;border-radius:6px;font-size:.8rem;cursor:pointer;"><i class="bi bi-x-lg"></i> '+t('btn_reject')+'</button>';
+    }
+    return '<span style="color:#999;font-size:.8rem;">—</span>';
+  }
+
+  window.confirmBooking = function(id) {
+    if (!confirm(t('confirm_approve'))) return;
+    fetch('/api/bookings/'+id+'/confirm', { method:'POST', headers:{ Authorization:'Bearer '+token } })
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) { alert(data.error); return; }
+        loaded.bookings = false;
+        loadBookings();
+      })
+      .catch(() => alert(t('action_fail')));
+  };
+
+  window.rejectBooking = function(id) {
+    if (!confirm(t('confirm_reject'))) return;
+    fetch('/api/bookings/'+id+'/reject', { method:'POST', headers:{ Authorization:'Bearer '+token } })
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) { alert(data.error); return; }
+        loaded.bookings = false;
+        loadBookings();
+      })
+      .catch(() => alert(t('action_fail')));
+  };
+
+  function statusColor(s) {
+    return { confirmed:'#198754', pending:'#e67e22', cancelled:'#dc3545', rejected:'#6f42c1', completed:'#0d6efd' }[s] || '#6c757d';
+  }
+  function esc(s) { return String(s||"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
+  function fmtDate(dt) {
+    if (!dt) return "-";
+    const d = new Date(dt);
+    return d.getFullYear()+"-"+(d.getMonth()+1).toString().padStart(2,'0')+"-"+d.getDate().toString().padStart(2,'0');
+  }
+
+  showAdminTab('users', document.querySelector('.admin-tab-btn:first-child'));
+});
+</script>

@@ -1,10 +1,11 @@
 class BookingMailer < ApplicationMailer
-  default from: ENV.fetch("SMTP_FROM", "noreply@cuhkbooking.com")
+  default from: ENV.fetch("SMTP_FROM", "CUHK Booking <onboarding@resend.dev>")
 
   def booking_confirmation(booking)
     @booking = booking
     @user = booking.user
     @venue = booking.venue
+    @venue_name = @venue&.name || "Equipment Only"
     mail(to: @user.email, subject: "Booking Created - #{@booking.title}")
   end
 
@@ -12,6 +13,7 @@ class BookingMailer < ApplicationMailer
     @booking = booking
     @user = booking.user
     @venue = booking.venue
+    @venue_name = @venue&.name || "Equipment Only"
     mail(to: @user.email, subject: "Booking Confirmed - #{@booking.title}")
   end
 
@@ -20,6 +22,7 @@ class BookingMailer < ApplicationMailer
     @cancellation = cancellation
     @user = booking.user
     @venue = booking.venue
+    @venue_name = @venue&.name || "Equipment Only"
     mail(to: @user.email, subject: "Booking Cancelled - #{@booking.title}")
   end
 
@@ -27,6 +30,7 @@ class BookingMailer < ApplicationMailer
     @bookings = bookings
     @user = bookings.first.user
     @venue = bookings.first.venue
+    @venue_name = @venue&.name || "Equipment Only"
     @count = bookings.size
     mail(to: @user.email, subject: "Recurring Booking Created - #{bookings.first.title} (#{@count} bookings)")
   end

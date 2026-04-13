@@ -6,8 +6,9 @@ Rails.application.routes.draw do
   get "catalog", to: "home#catalog"
   get "equipment", to: "home#equipment"
   get "venue_bookings", to: "home#venue_bookings"
-  get "admin_users", to: "home#admin_users"
-  get "admin_bookings", to: "home#admin_bookings"
+  get "admin_panel", to: "home#admin_panel"
+  get "profile", to: "home#profile"
+  get "ai_assistant", to: "home#ai_assistant"
 
   get "up" => "rails/health#show", as: :rails_health_check
   root "home#index"
@@ -26,6 +27,7 @@ Rails.application.routes.draw do
       member do
         post :cancel
         post :confirm
+        post :reject
         post :check_in
       end
       collection do
@@ -37,6 +39,10 @@ Rails.application.routes.draw do
     resources :venues, only: [ :index, :show, :create, :update, :destroy ] do
       collection do
         get :search
+        get :browse
+      end
+      member do
+        get :bookings
       end
     end
 
@@ -44,8 +50,12 @@ Rails.application.routes.draw do
     resources :equipment, only: [ :index, :show, :create, :update, :destroy ] do
       collection do
         get :search
+        get :browse
       end
     end
+
+    # Public tenant list (for registration)
+    get "tenants", to: "tenants#index"
 
     # Analytics
     get "analytics/bookings/stats", to: "analytics#booking_stats"

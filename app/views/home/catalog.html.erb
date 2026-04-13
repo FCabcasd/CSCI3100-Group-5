@@ -1,0 +1,427 @@
+<div class="dashboard-page">
+  <nav class="dashboard-nav">
+    <a href="/menu" class="brand" style="text-decoration:none;color:#fff">
+      <i class="bi bi-building"></i> <span data-i18n="brand">CUHK Venue Booking</span>
+    </a>
+    <div class="user-info">
+      <span id="user-greeting"></span>
+      <button class="btn-logout" id="lang-toggle-btn" onclick="toggleLang()" style="font-weight:600;">EN</button>
+      <a href="/menu" class="btn-logout"><i class="bi bi-grid"></i> <span data-i18n="menu">Menu</span></a>
+      <button class="btn-logout" id="logout-btn"><i class="bi bi-box-arrow-right"></i> <span data-i18n="logout">Logout</span></button>
+    </div>
+  </nav>
+
+  <div class="page-container">
+    <div class="page-header">
+      <h1><i class="bi bi-geo-alt"></i> <span data-i18n="browse_venues">Browse Venues</span></h1>
+      <p data-i18n="browse_venues_sub">Search and explore available venues across all departments</p>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-input-wrap">
+        <i class="bi bi-search"></i>
+        <input type="text" id="venue-search" data-i18n-placeholder="ph_search_venues" placeholder="Type to search venues..." autocomplete="off">
+        <button class="btn-clear" id="clear-search" style="display:none"><i class="bi bi-x-lg"></i></button>
+        <div id="search-dropdown" class="search-dropdown"></div>
+      </div>
+      <div class="filter-row">
+        <select id="filter-capacity" class="filter-select">
+          <option value="" data-i18n="any_capacity">Any Capacity</option>
+          <option value="10">≤ 10</option>
+          <option value="30">≤ 30</option>
+          <option value="50">≤ 50</option>
+          <option value="100">≤ 100</option>
+          <option value="200">≤ 200</option>
+          <option value="999999">200+</option>
+        </select>
+        <select id="filter-feature" class="filter-select">
+          <option value="" data-i18n="any_feature">Any Feature</option>
+          <option value="projector">Projector</option>
+          <option value="wifi">WiFi</option>
+          <option value="whiteboard">Whiteboard</option>
+          <option value="computers">Computers</option>
+          <option value="microphone">Microphone</option>
+          <option value="air_conditioning">Air Conditioning</option>
+          <option value="video_conference">Video Conference</option>
+          <option value="outdoor">Outdoor</option>
+        </select>
+        <button class="btn-apply-filter" id="apply-filter-btn"><i class="bi bi-funnel"></i> <span data-i18n="apply_filters">Apply Filters</span></button>
+        <span id="result-count" class="result-count"></span>
+      </div>
+    </div>
+
+    <div id="venues-grid" class="venues-grid">
+      <div class="loading-spinner"><span class="spinner-border text-secondary"></span> <span data-i18n="loading_venues">Loading venues...</span></div>
+    </div>
+    <div id="load-more-wrap" class="text-center mt-3 mb-4" style="display:none">
+      <button id="load-more-btn" class="btn-load-more" data-i18n="load_more">Load More</button>
+    </div>
+
+    <!-- Inline Booking Form -->
+    <div id="venue-book-section" style="display:none;margin-top:2rem;">
+      <div style="background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(123,45,142,0.10);overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#7b2d8e,#5a1d6e);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;">
+          <h3 style="margin:0;color:#fff;font-size:1.15rem;font-weight:700;"><i class="bi bi-calendar-plus me-2"></i><span data-i18n="book_venue_title">Book Venue</span></h3>
+          <button onclick="deselectVenue()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:.85rem;"><i class="bi bi-x-lg me-1"></i><span data-i18n="btn_deselect">Deselect</span></button>
+        </div>
+        <div style="padding:20px 24px;">
+          <div id="selected-venue-info" style="display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:12px;background:linear-gradient(135deg,#f0e6ff,#e8f4fd);margin-bottom:1.2rem;">
+            <div style="width:48px;height:48px;border-radius:12px;background:#7b2d8e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">
+              <i class="bi bi-geo-alt-fill"></i>
+            </div>
+            <div>
+              <div id="book-venue-name" style="font-weight:700;font-size:1.05rem;color:#1a1a2e;"></div>
+              <div id="book-venue-loc" style="font-size:.85rem;color:#666;"></div>
+            </div>
+            <div style="margin-left:auto;">
+              <i class="bi bi-check-circle-fill" style="color:#198754;font-size:1.5rem;"></i>
+            </div>
+          </div>
+          <form id="venue-book-form">
+            <div style="margin-bottom:1rem;">
+              <label style="font-weight:600;font-size:.9rem;margin-bottom:6px;display:block;">
+                <i class="bi bi-pencil-square" style="color:#7b2d8e;margin-right:4px;"></i><span data-i18n="lbl_book_title">Booking Title</span>
+              </label>
+              <input type="text" class="form-control form-control-lg" id="book-title"
+                     data-i18n-placeholder="ph_book_venue" placeholder="e.g. Team meeting, Course defense" required maxlength="40"
+                     style="border-radius:10px;border:2px solid #e0e0e0;padding:10px 14px;font-size:.95rem;">
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem;">
+              <div>
+                <label style="font-weight:600;font-size:.9rem;margin-bottom:6px;display:block;">
+                  <i class="bi bi-clock" style="color:#0d6efd;margin-right:4px;"></i><span data-i18n="lbl_start_time">Start Time</span>
+                </label>
+                <input type="text" class="form-control" id="book-start" required readonly
+                       placeholder="yyyy-mm-dd HH:MM"
+                       style="border-radius:10px;border:2px solid #e0e0e0;padding:8px 12px;background:#fff;">
+              </div>
+              <div>
+                <label style="font-weight:600;font-size:.9rem;margin-bottom:6px;display:block;">
+                  <i class="bi bi-clock-history" style="color:#e67e22;margin-right:4px;"></i><span data-i18n="lbl_end_time">End Time</span>
+                </label>
+                <input type="text" class="form-control" id="book-end" required readonly
+                       placeholder="yyyy-mm-dd HH:MM"
+                       style="border-radius:10px;border:2px solid #e0e0e0;padding:8px 12px;background:#fff;">
+              </div>
+            </div>
+            <div style="margin-bottom:1rem;">
+              <label style="font-weight:600;font-size:.9rem;margin-bottom:6px;display:block;">
+                <i class="bi bi-chat-left-text" style="color:#198754;margin-right:4px;"></i><span data-i18n="lbl_remarks">Remarks (optional)</span>
+              </label>
+              <textarea class="form-control" id="book-remarks" rows="2" maxlength="200"
+                        data-i18n-placeholder="ph_remarks" placeholder="Additional notes..."
+                        style="border-radius:10px;border:2px solid #e0e0e0;padding:10px 14px;resize:vertical;"></textarea>
+            </div>
+            <div id="book-error" style="display:none;background:#fee;border:1px solid #fcc;color:#c00;padding:8px 14px;border-radius:10px;font-size:.85rem;margin-bottom:1rem;"></div>
+            <button type="submit" style="width:100%;padding:12px;border:none;border-radius:12px;background:linear-gradient(135deg,#7b2d8e,#0d6efd);color:#fff;font-size:1rem;font-weight:700;cursor:pointer;transition:transform .15s,box-shadow .15s;">
+              <i class="bi bi-check-circle me-2"></i><span data-i18n="btn_submit_booking">Confirm Booking</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Overlay -->
+<div id="venueOverlay" onclick="this.style.display='none'" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;background:rgba(0,0,0,0.5);">
+  <div onclick="event.stopPropagation()" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:92%;max-width:680px;max-height:85vh;background:#fff;border-radius:18px;box-shadow:0 12px 48px rgba(0,0,0,0.25);overflow-y:auto;">
+    <div style="position:sticky;top:0;background:#fff;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:18px 24px 14px;border-bottom:1px solid #eee;">
+      <h4 id="modal-venue-name" style="font-weight:700;margin:0;font-size:1.3rem;"></h4>
+      <button onclick="document.getElementById('venueOverlay').style.display='none'" style="width:40px;height:40px;border-radius:50%;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;" onmouseover="this.style.background='#fee2e2';this.style.color='#dc2626';this.style.borderColor='#fca5a5'" onmouseout="this.style.background='#f3f4f6';this.style.color='#374151';this.style.borderColor='#d1d5db'"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div id="modal-venue-body" style="padding:20px 24px 24px;"></div>
+    <div style="padding:0 24px 20px;">
+      <button id="select-venue-btn" style="width:100%;padding:12px;border:none;border-radius:12px;background:linear-gradient(135deg,#7b2d8e,#0d6efd);color:#fff;font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .15s,box-shadow .15s;" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(123,45,142,0.3)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+        <i class="bi bi-check2-square" style="font-size:1.2rem;"></i> <span data-i18n="btn_select_venue">Select this venue for booking</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("turbo:load", () => {
+  if (!document.getElementById("venues-grid")) return;
+  const token = localStorage.getItem("access_token");
+
+  let allVenues = [];
+  let displayedCount = 0;
+  const PAGE_SIZE = 12;
+  const grid = document.getElementById("venues-grid");
+  const searchInput = document.getElementById("venue-search");
+  const clearBtn = document.getElementById("clear-search");
+  const dropdown = document.getElementById("search-dropdown");
+  const filterCapacity = document.getElementById("filter-capacity");
+  const filterFeature = document.getElementById("filter-feature");
+  const resultCount = document.getElementById("result-count");
+  const loadMoreWrap = document.getElementById("load-more-wrap");
+  const loadMoreBtn = document.getElementById("load-more-btn");
+  const applyBtn = document.getElementById("apply-filter-btn");
+  const authHeaders = token ? { "Authorization": "Bearer " + token, "Accept": "application/json" } : { "Accept": "application/json" };
+
+  // Initialize flatpickr date pickers
+  const fpOpts = { enableTime: true, dateFormat: "Y-m-d H:i", time_24hr: true, locale: "en" };
+  flatpickr("#book-start", fpOpts);
+  flatpickr("#book-end", fpOpts);
+
+  if (token) {
+    fetch("<%= api_auth_me_path %>", { headers: authHeaders })
+      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then(u => { if (u) document.getElementById("user-greeting").textContent = t('hi') + (u.full_name || u.username); })
+      .catch(() => {});
+  }
+  document.getElementById("logout-btn").addEventListener("click", () => {
+    localStorage.removeItem("access_token"); localStorage.removeItem("refresh_token");
+    window.location.href = "/";
+  });
+
+  fetchVenues();
+
+  function fetchVenues(query) {
+    const url = query ? "/api/venues/browse?limit=100&q=" + encodeURIComponent(query) : "/api/venues/browse?limit=100";
+    grid.innerHTML = '<div class="loading-spinner"><span class="spinner-border text-secondary"></span> ' + t('loading') + '</div>';
+    fetch(url)
+      .then(r => r.json())
+      .then(data => { allVenues = data; applyClientFilters(); })
+      .catch(() => { grid.innerHTML = '<p class="text-center text-muted">' + t('failed_load_venues') + '</p>'; });
+  }
+
+  let debounceTimer;
+  searchInput.addEventListener("input", () => {
+    const q = searchInput.value.trim();
+    clearBtn.style.display = q ? "block" : "none";
+    clearTimeout(debounceTimer);
+    if (!q) { dropdown.classList.remove("show"); fetchVenues(); return; }
+    debounceTimer = setTimeout(() => liveSearch(q), 250);
+  });
+
+  function liveSearch(q) {
+    fetch("/api/venues/browse?limit=8&q=" + encodeURIComponent(q))
+      .then(r => r.json())
+      .then(results => {
+        if (results.length === 0) {
+          dropdown.innerHTML = '<div class="dropdown-empty">' + t('no_venues_found') + '</div>';
+        } else {
+          dropdown.innerHTML = results.map(v =>
+            '<div class="dropdown-item" data-id="' + v.id + '">' +
+              '<strong>' + highlightMatch(escHtml(v.name), q) + '</strong>' +
+              '<small>' + escHtml(v.location) + ' &middot; <i class="bi bi-people"></i> ' + v.capacity + '</small>' +
+            '</div>'
+          ).join("");
+        }
+        dropdown.classList.add("show");
+      });
+  }
+
+  function highlightMatch(text, query) {
+    const re = new RegExp("(" + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ")", "gi");
+    return text.replace(re, '<mark>$1</mark>');
+  }
+
+  dropdown.addEventListener("click", (e) => {
+    const item = e.target.closest(".dropdown-item");
+    if (!item) return;
+    const id = parseInt(item.dataset.id);
+    dropdown.classList.remove("show");
+    searchInput.value = "";
+    clearBtn.style.display = "none";
+    fetchVenues();
+    setTimeout(() => showVenueDetail(id), 400);
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".search-input-wrap")) dropdown.classList.remove("show");
+  });
+
+  searchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      dropdown.classList.remove("show");
+      fetchVenues(searchInput.value.trim());
+    }
+  });
+
+  clearBtn.addEventListener("click", () => {
+    searchInput.value = ""; clearBtn.style.display = "none";
+    dropdown.classList.remove("show"); fetchVenues();
+  });
+
+  applyBtn.addEventListener("click", applyClientFilters);
+  filterCapacity.addEventListener("change", applyClientFilters);
+  filterFeature.addEventListener("change", applyClientFilters);
+
+  function applyClientFilters() {
+    displayedCount = 0;
+    const capMax = parseInt(filterCapacity.value) || Infinity;
+    const feat = filterFeature.value;
+    const filtered = allVenues.filter(v => {
+      if (capMax < 999999 && v.capacity > capMax) return false;
+      if (capMax === 999999 && v.capacity <= 200) return false;
+      if (feat && (!v.features || !v.features[feat])) return false;
+      return true;
+    });
+    resultCount.textContent = filtered.length + t('venues_found');
+    grid.innerHTML = "";
+    if (filtered.length === 0) {
+      grid.innerHTML = '<p class="text-center text-muted py-4">' + t('no_venues_match') + '</p>';
+      loadMoreWrap.style.display = "none"; return;
+    }
+    showMore(filtered);
+  }
+
+  function showMore(filtered) {
+    const slice = filtered.slice(displayedCount, displayedCount + PAGE_SIZE);
+    slice.forEach(v => grid.insertAdjacentHTML("beforeend", venueCard(v)));
+    displayedCount += slice.length;
+    loadMoreWrap.style.display = displayedCount < filtered.length ? "block" : "none";
+  }
+  loadMoreBtn.addEventListener("click", () => {
+    const capMax = parseInt(filterCapacity.value) || Infinity;
+    const feat = filterFeature.value;
+    const filtered = allVenues.filter(v => {
+      if (capMax < 999999 && v.capacity > capMax) return false;
+      if (capMax === 999999 && v.capacity <= 200) return false;
+      if (feat && (!v.features || !v.features[feat])) return false;
+      return true;
+    });
+    showMore(filtered);
+  });
+
+  function venueCard(v) {
+    const features = v.features ? Object.keys(v.features).filter(k => v.features[k]).slice(0, 4) : [];
+    const featureBadges = features.map(f => '<span class="venue-feat">' + featureIcon(f) + ' ' + featureLabel(f) + '</span>').join("");
+    const moreCount = v.features ? Object.keys(v.features).filter(k => v.features[k]).length - 4 : 0;
+    const moreTag = moreCount > 0 ? '<span class="venue-feat">+' + moreCount + '</span>' : '';
+    return '<div class="venue-card" onclick="showVenueDetail(' + v.id + ')">' +
+      '<div class="venue-card-header">' +
+        '<h3>' + escHtml(v.name) + '</h3>' +
+        '<span class="venue-capacity"><i class="bi bi-people"></i> ' + v.capacity + '</span>' +
+      '</div>' +
+      '<p class="venue-location"><i class="bi bi-geo-alt"></i> ' + escHtml(v.location) + '</p>' +
+      '<p class="venue-desc">' + escHtml(v.description || "") + '</p>' +
+      '<div class="venue-features">' + featureBadges + moreTag + '</div>' +
+      '<div class="venue-hours"><i class="bi bi-clock"></i> ' + (v.available_from || "\u2014") + ' \u2013 ' + (v.available_until || "\u2014") + '</div>' +
+    '</div>';
+  }
+
+  function featureIcon(f) {
+    const icons = { projector:'bi-projector', wifi:'bi-wifi', whiteboard:'bi-easel', computers:'bi-pc-display',
+      microphone:'bi-mic', air_conditioning:'bi-snow', recording:'bi-record-circle', video_conference:'bi-camera-video',
+      smart_board:'bi-display', printing:'bi-printer', outdoor:'bi-tree', stage:'bi-music-note-beamed',
+      sound_system:'bi-speaker', lighting:'bi-lightbulb', chalkboard:'bi-pencil-square', lab_benches:'bi-table',
+      oscilloscopes:'bi-activity', power_supplies:'bi-lightning', soldering:'bi-tools', fume_hood:'bi-wind',
+      demo_bench:'bi-clipboard-data', flexible_seating:'bi-arrows-move', round_tables:'bi-circle',
+      scenic:'bi-image', power_outlets:'bi-plug', quiet_zone:'bi-volume-mute', portable_stage:'bi-box',
+      court:'bi-dribbble', backstage:'bi-door-open' };
+    return '<i class="bi ' + (icons[f] || 'bi-check-circle') + '"></i>';
+  }
+  function featureLabel(f) { return f.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()); }
+  function escHtml(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+  let currentVenueId = null;
+  window.showVenueDetail = function(id) {
+    const v = allVenues.find(x => x.id === id);
+    if (!v) return;
+    currentVenueId = v.id;
+    document.getElementById("modal-venue-name").textContent = v.name;
+    const features = v.features ? Object.keys(v.features).filter(k => v.features[k]) : [];
+    const featHtml = features.map(f => '<span class="detail-badge">' + featureIcon(f) + ' ' + featureLabel(f) + '</span>').join("");
+    document.getElementById("modal-venue-body").innerHTML =
+      '<div class="detail-grid">' +
+        '<div class="detail-item">' +
+          '<div class="detail-icon" style="background:#f0e6ff;color:#7b2d8e"><i class="bi bi-geo-alt-fill"></i></div>' +
+          '<div><div class="detail-label">' + t('lbl_location') + '</div><div class="detail-value">' + escHtml(v.location) + '</div></div>' +
+        '</div>' +
+        '<div class="detail-item">' +
+          '<div class="detail-icon" style="background:#e6f7ee;color:#198754"><i class="bi bi-people-fill"></i></div>' +
+          '<div><div class="detail-label">' + t('lbl_capacity') + '</div><div class="detail-value">' + v.capacity + t('lbl_people') + '</div></div>' +
+        '</div>' +
+        '<div class="detail-item">' +
+          '<div class="detail-icon" style="background:#fff3e0;color:#e67e22"><i class="bi bi-clock-fill"></i></div>' +
+          '<div><div class="detail-label">' + t('lbl_hours') + '</div><div class="detail-value">' + (v.available_from || "\u2014") + ' \u2013 ' + (v.available_until || "\u2014") + '</div></div>' +
+        '</div>' +
+        '<div class="detail-item detail-item-wide">' +
+          '<div class="detail-icon" style="background:#e8f4fd;color:#0d6efd"><i class="bi bi-info-circle-fill"></i></div>' +
+          '<div><div class="detail-label">' + t('lbl_description') + '</div><div class="detail-value">' + escHtml(v.description || t('lbl_no_desc')) + '</div></div>' +
+        '</div>' +
+        '<div class="detail-item detail-item-wide">' +
+          '<div class="detail-icon" style="background:#f0e6ff;color:#7b2d8e"><i class="bi bi-tags-fill"></i></div>' +
+          '<div><div class="detail-label">' + t('lbl_features') + '</div><div class="detail-value detail-badges">' + (featHtml || '<span class="text-muted">' + t('lbl_none_listed') + '</span>') + '</div></div>' +
+        '</div>' +
+      '</div>';
+    document.getElementById("venueOverlay").style.display = "block";
+  };
+
+  // Select venue for booking
+  document.getElementById("select-venue-btn").onclick = function() {
+    if (!currentVenueId) return;
+    const v = allVenues.find(x => x.id === currentVenueId);
+    if (!v) return;
+    document.getElementById("book-venue-name").textContent = v.name;
+    document.getElementById("book-venue-loc").textContent = v.location || '';
+    document.getElementById("venue-book-section").style.display = "block";
+    document.getElementById("venueOverlay").style.display = "none";
+    // Highlight selected card
+    document.querySelectorAll('.venue-card').forEach(c => c.style.outline = '');
+    setTimeout(() => {
+      document.getElementById("venue-book-section").scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  };
+
+  window.deselectVenue = function() {
+    currentVenueId = null;
+    document.getElementById("venue-book-section").style.display = "none";
+    document.querySelectorAll('.venue-card').forEach(c => c.style.outline = '');
+  };
+
+  document.getElementById("venue-book-form").onsubmit = function(e) {
+    e.preventDefault();
+    if (!currentVenueId) return;
+    const title = document.getElementById("book-title").value.trim();
+    const start = document.getElementById("book-start").value;
+    const end = document.getElementById("book-end").value;
+    const remarks = document.getElementById("book-remarks").value.trim();
+    const errorBox = document.getElementById("book-error");
+    errorBox.style.display = "none";
+    if (!title || !start || !end) {
+      errorBox.textContent = t('err_fill_all'); errorBox.style.display = "block"; return;
+    }
+    if (new Date(start) >= new Date(end)) {
+      errorBox.textContent = t('err_end_before_start'); errorBox.style.display = "block"; return;
+    }
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>' + t('btn_submitting');
+    fetch("/api/bookings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({ venue_id: currentVenueId, title, start_time: start, end_time: end, remarks })
+    })
+      .then(r => r.json())
+      .then(data => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>' + t('btn_submit_booking');
+        if (data.error || data.errors) {
+          errorBox.textContent = data.error || data.errors; errorBox.style.display = "block";
+        } else {
+          alert(t('book_venue_success'));
+          deselectVenue();
+          document.getElementById("book-title").value = '';
+          document.getElementById("book-start").value = '';
+          document.getElementById("book-end").value = '';
+          document.getElementById("book-remarks").value = '';
+        }
+      })
+      .catch(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>' + t('btn_submit_booking');
+        errorBox.textContent = t('book_fail'); errorBox.style.display = "block";
+      });
+  };
+
+  // Re-render on language change
+  document.addEventListener("langchange", () => {
+    if (allVenues.length) applyClientFilters();
+  });
+});
+</script>
