@@ -1,25 +1,20 @@
 <div class="auth-page">
-  <!-- Brand -->
   <div class="auth-brand">
     <h1><i class="bi bi-building"></i> CUHK Venue Booking</h1>
     <p>Book venues &amp; equipment across departments</p>
   </div>
 
-  <!-- Alert -->
   <div id="auth-alert" class="auth-alert alert" role="alert">
     <i id="alert-icon"></i>
     <span id="alert-text"></span>
   </div>
 
-  <!-- Glass Card -->
   <div class="glass-card">
-    <!-- Tabs -->
     <div class="auth-tabs">
       <button class="auth-tab-btn active" data-tab="login">Sign In</button>
       <button class="auth-tab-btn" data-tab="register">Create Account</button>
     </div>
 
-    <!-- Login Panel -->
     <div id="login-panel" class="auth-panel active">
       <form id="login-form" novalidate>
         <div class="input-group-icon">
@@ -39,7 +34,6 @@
       </form>
     </div>
 
-    <!-- Register Panel -->
     <div id="register-panel" class="auth-panel">
       <form id="register-form" novalidate>
         <div class="input-group-icon">
@@ -62,7 +56,10 @@
           <input type="password" id="reg-password" placeholder="Password (min 6 chars)" required minlength="6" autocomplete="new-password">
           <button type="button" class="password-toggle" tabindex="-1"><i class="bi bi-eye"></i></button>
         </div>
-        <div class="password-strength" aria-hidden="true"><div id="strength-bar" class="password-strength-bar"></div></div>
+
+        <div class="password-strength" aria-hidden="true">
+          <div id="strength-bar" class="password-strength-bar"></div>
+        </div>
 
         <div class="input-group-icon">
           <i class="bi bi-lock-fill"></i>
@@ -76,7 +73,6 @@
     </div>
   </div>
 
-  <!-- Footer -->
   <div class="auth-footer">
     &copy; 2026 CUHK Venue &amp; Equipment Booking System
   </div>
@@ -84,25 +80,22 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  /* ---- Redirect if already logged in ---- */
   if (localStorage.getItem("access_token")) {
     window.location.href = "<%= menu_path %>";
     return;
   }
 
-  /* ---- Elements ---- */
-  const alertBox  = document.getElementById("auth-alert");
+  const alertBox = document.getElementById("auth-alert");
   const alertIcon = document.getElementById("alert-icon");
   const alertText = document.getElementById("alert-text");
-  const tabs      = document.querySelectorAll(".auth-tab-btn");
-  const panels    = document.querySelectorAll(".auth-panel");
-  const loginForm    = document.getElementById("login-form");
+  const tabs = document.querySelectorAll(".auth-tab-btn");
+  const panels = document.querySelectorAll(".auth-panel");
+  const loginForm = document.getElementById("login-form");
   const registerForm = document.getElementById("register-form");
-  const loginBtn     = document.getElementById("login-btn");
-  const registerBtn  = document.getElementById("register-btn");
-  const strengthBar   = document.getElementById("strength-bar");
+  const loginBtn = document.getElementById("login-btn");
+  const registerBtn = document.getElementById("register-btn");
+  const strengthBar = document.getElementById("strength-bar");
 
-  /* ---- Tab switching ---- */
   tabs.forEach(tab => {
     tab.addEventListener("click", () => {
       tabs.forEach(t => t.classList.remove("active"));
@@ -113,11 +106,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  /* ---- Password visibility toggle ---- */
   document.querySelectorAll(".password-toggle").forEach(btn => {
     btn.addEventListener("click", () => {
       const input = btn.previousElementSibling;
-      const icon  = btn.querySelector("i");
+      const icon = btn.querySelector("i");
       if (input.type === "password") {
         input.type = "text";
         icon.classList.replace("bi-eye", "bi-eye-slash");
@@ -128,23 +120,28 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  /* ---- Password strength meter ---- */
   document.getElementById("reg-password").addEventListener("input", (e) => {
     const val = e.target.value;
     strengthBar.className = "password-strength-bar";
     if (val.length === 0) return;
-    if (val.length < 6) { strengthBar.classList.add("strength-weak"); }
-    else if (val.length < 10 || !/[A-Z]/.test(val) || !/[0-9]/.test(val)) { strengthBar.classList.add("strength-medium"); }
-    else { strengthBar.classList.add("strength-strong"); }
+    if (val.length < 6) {
+      strengthBar.classList.add("strength-weak");
+    } else if (val.length < 10 || !/[A-Z]/.test(val) || !/[0-9]/.test(val)) {
+      strengthBar.classList.add("strength-medium");
+    } else {
+      strengthBar.classList.add("strength-strong");
+    }
   });
 
-  /* ---- Alert helpers ---- */
   function showAlert(msg, type) {
     alertBox.className = "auth-alert alert alert-" + type + " show";
     alertIcon.className = "bi " + (type === "success" ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill");
     alertText.textContent = msg;
   }
-  function hideAlert() { alertBox.className = "auth-alert alert"; }
+
+  function hideAlert() {
+    alertBox.className = "auth-alert alert";
+  }
 
   function parseError(json, status) {
     if (!json) return "Request failed (status " + status + ")";
@@ -157,38 +154,44 @@ document.addEventListener("DOMContentLoaded", () => {
     if (loading) {
       btn.disabled = true;
       btn.dataset.origText = btn.textContent;
-      btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Please wait…';
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Please wait...';
     } else {
       btn.disabled = false;
       btn.textContent = btn.dataset.origText;
     }
   }
 
-  /* ---- Login ---- */
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     hideAlert();
-    const email    = document.getElementById("login-email").value.trim();
+
+    const email = document.getElementById("login-email").value.trim();
     const password = document.getElementById("login-password").value;
 
-    if (!email || !password) { showAlert("Please fill in all fields.", "danger"); return; }
+    if (!email || !password) {
+      showAlert("Please fill in all fields.", "danger");
+      return;
+    }
 
     setLoading(loginBtn, true);
+
     try {
       const res = await fetch("<%= api_auth_login_path %>", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify({ email, password })
       });
+
       const data = await res.json().catch(() => null);
       if (!res.ok) throw new Error(parseError(data, res.status));
       if (!data.access_token) throw new Error("Login succeeded but no token returned.");
 
-      /* Store tokens */
       localStorage.setItem("access_token", data.access_token);
-      localStorage.setItem("refresh_token", data.refresh_token);
+      if (data.refresh_token) {
+        localStorage.setItem("refresh_token", data.refresh_token);
+      }
 
-      showAlert("Login successful! Redirecting…", "success");
+      showAlert("Login successful! Redirecting...", "success");
       setTimeout(() => { window.location.href = "<%= menu_path %>"; }, 600);
     } catch (err) {
       showAlert(err.message || "Login failed.", "danger");
@@ -196,33 +199,44 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  /* ---- Register ---- */
   registerForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     hideAlert();
-    const username  = document.getElementById("reg-username").value.trim();
-    const fullName  = document.getElementById("reg-fullname").value.trim();
-    const email     = document.getElementById("reg-email").value.trim();
-    const password  = document.getElementById("reg-password").value;
-    const confirm   = document.getElementById("reg-password-confirm").value;
+
+    const username = document.getElementById("reg-username").value.trim();
+    const fullName = document.getElementById("reg-fullname").value.trim();
+    const email = document.getElementById("reg-email").value.trim();
+    const password = document.getElementById("reg-password").value;
+    const confirm = document.getElementById("reg-password-confirm").value;
 
     if (!username || !fullName || !email || !password || !confirm) {
-      showAlert("Please fill in all fields.", "danger"); return;
+      showAlert("Please fill in all fields.", "danger");
+      return;
     }
     if (password.length < 6) {
-      showAlert("Password must be at least 6 characters.", "danger"); return;
+      showAlert("Password must be at least 6 characters.", "danger");
+      return;
     }
     if (password !== confirm) {
-      showAlert("Passwords do not match.", "danger"); return;
+      showAlert("Passwords do not match.", "danger");
+      return;
     }
 
     setLoading(registerBtn, true);
+
     try {
       const res = await fetch("<%= api_auth_register_path %>", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify({ username, full_name: fullName, email, password, password_confirmation: confirm })
+        body: JSON.stringify({
+          username,
+          full_name: fullName,
+          email,
+          password,
+          password_confirmation: confirm
+        })
       });
+
       const data = await res.json().catch(() => null);
       if (!res.ok) throw new Error(parseError(data, res.status));
       if (!data.id) throw new Error("Registration succeeded but response is missing user data.");
@@ -230,7 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
       showAlert("Account created! Please sign in.", "success");
       registerForm.reset();
       strengthBar.className = "password-strength-bar";
-      /* Switch to login tab */
+
       setTimeout(() => {
         tabs[0].click();
         document.getElementById("login-email").value = email;
