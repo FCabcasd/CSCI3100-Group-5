@@ -53,9 +53,8 @@ Rails.application.configure do
     config.cache_store = :memory_store
   end
 
-  # Use Solid Queue for background jobs (backed by PostgreSQL on Heroku).
-  config.active_job.queue_adapter = :solid_queue
-  config.solid_queue.connects_to = { database: { writing: :queue } }
+  # Use async adapter for background jobs (processes in-process, suitable for single dyno).
+  config.active_job.queue_adapter = :async
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
