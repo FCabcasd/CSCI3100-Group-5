@@ -92,6 +92,7 @@ module Api
         full_name: user.full_name,
         role: user.role,
         tenant_id: user.tenant_id,
+        tenant_name: user.tenant&.name,
         is_active: user.is_active,
         points: user.points,
         created_at: user.created_at

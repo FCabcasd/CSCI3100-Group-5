@@ -82,7 +82,7 @@ document.addEventListener("turbo:load", () => {
           <div class="profile-detail-icon" style="background:#fff3e0;color:#e67e22;"><i class="bi bi-building"></i></div>
           <div>
             <div class="profile-detail-label">${t('lbl_tenant')}</div>
-            <div class="profile-detail-value">${data.tenant_id ?? t('na')}</div>
+            <div class="profile-detail-value">${esc(data.tenant_name || t('na'))}</div>
           </div>
         </div>
         <div class="profile-detail-row">
