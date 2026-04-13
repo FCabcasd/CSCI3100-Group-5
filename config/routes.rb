@@ -10,6 +10,7 @@ Rails.application.routes.draw do
 
   get "up" => "rails/health#show", as: :rails_health_check
   root "home#index"
+  get "analytics", to: "home#analytics"
 
   namespace :api do
     # Auth
@@ -17,7 +18,6 @@ Rails.application.routes.draw do
     post "auth/login",    to: "auth#login"
     post "auth/refresh",  to: "auth#refresh"
     get  "auth/me",       to: "auth#me"
-    get "analytics", to: "home#analytics"
 
     # Bookings
     resources :bookings, only: [ :index, :show, :create ] do
