@@ -38,6 +38,9 @@ class AiConsultantService
     - user: Create and manage own bookings
 
     Answer questions based on the above policy. Be helpful, concise, and accurate.
+    You have direct access to the venue and equipment database. When users ask for venue recommendations,
+    refer to the live data provided below to give specific, concrete suggestions.
+    NEVER say you cannot access the system or database. You CAN and DO have real venue data.
   POLICY
 
   def initialize
@@ -56,11 +59,13 @@ class AiConsultantService
       context_msg = "\n\nUser Context:\n- User: #{user_context[:name]}\n- Points: #{user_context[:points]}\n- Role: #{user_context[:role]}"
     end
 
+    live_data = build_live_data_context
+
     contents = []
 
     # System prompt as first user message
-    contents << { role: "user", parts: [ { text: "#{BOOKING_POLICY}#{context_msg}\n\nPlease acknowledge you understand these rules and are ready to help." } ] }
-    contents << { role: "model", parts: [ { text: "I understand the CUHK Venue & Equipment Booking System rules. I'm ready to help!" } ] }
+    contents << { role: "user", parts: [ { text: "#{BOOKING_POLICY}#{context_msg}#{live_data}\n\nPlease acknowledge you understand these rules and are ready to help." } ] }
+    contents << { role: "model", parts: [ { text: "I understand the CUHK Venue & Equipment Booking System rules and I have access to the current venue and equipment data. I'm ready to help!" } ] }
 
     # Previous conversation history
     history.each do |msg|
@@ -105,6 +110,30 @@ class AiConsultantService
   end
 
   private
+
+  def build_live_data_context
+    venues = Venue.includes(:tenant).where(is_active: true).limit(50)
+    equipment = Equipment.includes(:tenant).where(is_active: true).limit(50)
+
+    venue_lines = venues.map do |v|
+      features = v.features.is_a?(Hash) ? v.features.keys.join(", ") : v.features.to_s
+      "- #{v.name} (ID:#{v.id}): Capacity #{v.capacity || 'N/A'}, Location: #{v.location || 'N/A'}, " \
+        "Department: #{v.tenant&.name || 'N/A'}, Hours: #{v.available_from}-#{v.available_until}, " \
+        "Features: #{features.presence || 'none'}"
+    end
+
+    equip_lines = equipment.map do |e|
+      "- #{e.name} (ID:#{e.id}): Type #{e.equipment_type || 'N/A'}, Qty: #{e.quantity}, " \
+        "Department: #{e.tenant&.name || 'N/A'}, Status: #{e.status}"
+    end
+
+    data = "\n\n## Live System Data (from database):\n"
+    data += "### Available Venues (#{venues.count}):\n#{venue_lines.join("\n")}\n" if venue_lines.any?
+    data += "### Available Equipment (#{equipment.count}):\n#{equip_lines.join("\n")}\n" if equip_lines.any?
+    data += "\nYou have REAL access to this data. When users ask about venues or equipment, " \
+            "use the data above to give concrete recommendations. Do NOT say you cannot access the system."
+    data
+  end
 
   def call_gemini(prompt)
     call_gemini_multi([ { role: "user", parts: [ { text: prompt } ] } ])
