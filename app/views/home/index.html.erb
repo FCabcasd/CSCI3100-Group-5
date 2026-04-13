@@ -29,7 +29,6 @@
         <div class="input-group-icon">
           <i class="bi bi-lock"></i>
           <input type="password" id="login-password" data-i18n-placeholder="ph_password" placeholder="Password" required autocomplete="current-password">
-          <button type="button" class="password-toggle" tabindex="-1"><i class="bi bi-eye"></i></button>
         </div>
 
         <button type="submit" class="btn-auth btn-auth-primary" id="login-btn" data-i18n="btn_signin">
@@ -65,7 +64,6 @@
         <div class="input-group-icon">
           <i class="bi bi-lock"></i>
           <input type="password" id="reg-password" data-i18n-placeholder="ph_password_min" placeholder="Password (min 6 chars)" required minlength="6" autocomplete="new-password">
-          <button type="button" class="password-toggle" tabindex="-1"><i class="bi bi-eye"></i></button>
         </div>
 
         <div class="password-strength" aria-hidden="true">
@@ -131,19 +129,6 @@ document.addEventListener("turbo:load", () => {
     });
   });
 
-  document.querySelectorAll(".password-toggle").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const input = btn.previousElementSibling;
-      const icon = btn.querySelector("i");
-      if (input.type === "password") {
-        input.type = "text";
-        icon.classList.replace("bi-eye", "bi-eye-slash");
-      } else {
-        input.type = "password";
-        icon.classList.replace("bi-eye-slash", "bi-eye");
-      }
-    });
-  });
 
   document.getElementById("reg-password").addEventListener("input", (e) => {
     const val = e.target.value;
