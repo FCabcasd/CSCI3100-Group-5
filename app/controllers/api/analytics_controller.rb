@@ -1,7 +1,7 @@
 module Api
   class AnalyticsController < BaseController
     skip_before_action :authorize_request
-    #before_action :require_admin!
+    # before_action :require_admin!
 
     def booking_stats
       bookings = tenant_bookings

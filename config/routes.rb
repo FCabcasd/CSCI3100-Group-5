@@ -2,7 +2,7 @@ Rails.application.routes.draw do
   get "home/index"
   get "menu", to: "home#menu"
   get "user_bookings", to: "home#user_bookings"
-  resources :bookings, only: [:index, :show]
+  resources :bookings, only: [ :index, :show ]
   get "catalog", to: "home#catalog"
   get "equipment", to: "home#equipment"
   get "venue_bookings", to: "home#venue_bookings"
