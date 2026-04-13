@@ -14,5 +14,4 @@ class HomeController < ApplicationController
 
   def analytics
   end
-
 end

@@ -1,52 +1,313 @@
-<h1>Analytics Dashboard</h1>
+<div class="analytics-page">
+  <div class="analytics-header">
+    <div>
+      <h1>Analytics Dashboard</h1>
+      <p class="subtitle">Usage overview for bookings, venues, and peak periods.</p>
+    </div>
+    <button class="refresh-btn" onclick="refreshAnalytics()">Refresh</button>
+  </div>
 
-<h2>Booking Stats</h2>
-<div id="stats">Loading...</div>
+  <div class="analytics-grid">
+    <section class="card">
+      <h2>Booking Stats</h2>
+      <div id="stats" class="card-content">Loading...</div>
+    </section>
 
-<h2>Venue Usage</h2>
-<div id="venues">Loading...</div>
+    <section class="card">
+      <h2>Venue Usage</h2>
+      <div id="venues" class="card-content">Loading...</div>
+    </section>
 
-<h2>Peak Times</h2>
-<div id="peak">Loading...</div>
+    <section class="card card-wide">
+      <h2>Peak Times</h2>
+      <div id="peak-times" class="card-content">Loading...</div>
+    </section>
+  </div>
+</div>
+
+<style>
+  .analytics-page {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px 40px;
+    font-family: Arial, sans-serif;
+    color: #1f2937;
+  }
+
+  .analytics-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .analytics-header h1 {
+    margin: 0;
+    font-size: 40px;
+    line-height: 1.1;
+  }
+
+  .subtitle {
+    margin-top: 8px;
+    color: #6b7280;
+    font-size: 15px;
+  }
+
+  .refresh-btn {
+    border: none;
+    background: #2563eb;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .refresh-btn:hover {
+    background: #1d4ed8;
+  }
+
+  .analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  }
+
+  .card-wide {
+    grid-column: span 2;
+  }
+
+  .card h2 {
+    margin: 0 0 16px;
+    font-size: 24px;
+  }
+
+  .card-content {
+    color: #374151;
+    line-height: 1.8;
+  }
+
+  .stats-list,
+  .venue-list,
+  .peak-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .stats-list li,
+  .venue-list li,
+  .peak-list li {
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .stats-list li:last-child,
+  .venue-list li:last-child,
+  .peak-list li:last-child {
+    border-bottom: none;
+  }
+
+  .metric-label {
+    font-weight: 600;
+  }
+
+  .peak-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .subheading {
+    margin-bottom: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .empty-state {
+    color: #6b7280;
+    font-style: italic;
+  }
+
+  .error-state {
+    color: #b91c1c;
+    font-weight: 600;
+  }
+
+  .map-btn {
+    margin-left: 10px;
+    border: none;
+    background: #111827;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+
+  .map-btn:hover {
+    background: #374151;
+  }
+
+  @media (max-width: 768px) {
+    .analytics-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .analytics-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .card-wide {
+      grid-column: span 1;
+    }
+
+    .peak-columns {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
 
 <script>
-async function loadAnalytics() {
-  const token = localStorage.getItem("token"); // 如果你们用 JWT
+  async function loadBookingStats() {
+    const statsEl = document.getElementById("stats");
+    statsEl.innerHTML = "Loading booking stats...";
 
-  // Booking stats
-  const statsRes = await fetch("/api/analytics/bookings/stats", {
-    headers: { "Authorization": "Bearer " + token }
-  });
-  const stats = await statsRes.json();
+    try {
+      const response = await fetch("/api/analytics/bookings/stats");
+      const data = await response.json();
 
-  document.getElementById("stats").innerHTML = `
-    Total: ${stats.total_bookings}<br>
-    Confirmed: ${stats.confirmed_bookings}<br>
-    Cancelled: ${stats.cancelled_bookings}
-  `;
+      statsEl.innerHTML = `
+        <ul class="stats-list">
+          <li><span class="metric-label">Total bookings:</span> ${data.total_bookings}</li>
+          <li><span class="metric-label">Pending bookings:</span> ${data.pending_bookings}</li>
+          <li><span class="metric-label">Confirmed bookings:</span> ${data.confirmed_bookings}</li>
+          <li><span class="metric-label">Cancelled bookings:</span> ${data.cancelled_bookings}</li>
+          <li><span class="metric-label">Completed bookings:</span> ${data.completed_bookings}</li>
+          <li><span class="metric-label">No-show bookings:</span> ${data.no_show_bookings}</li>
+        </ul>
+      `;
+    } catch (error) {
+      statsEl.innerHTML = `<div class="error-state">Failed to load booking stats</div>`;
+      console.error(error);
+    }
+  }
 
-  // Venue usage
-  const venueRes = await fetch("/api/analytics/venues/usage", {
-    headers: { "Authorization": "Bearer " + token }
-  });
-  const venues = await venueRes.json();
+  async function loadVenueUsage() {
+    const venuesEl = document.getElementById("venues");
+    venuesEl.innerHTML = "Loading venue usage...";
 
-  document.getElementById("venues").innerHTML =
-    venues.map(v => `${v.venue_name}: ${v.booking_count}`).join("<br>");
+    try {
+      const response = await fetch("/api/analytics/venues/usage");
+      const data = await response.json();
 
-  // Peak times
-  const peakRes = await fetch("/api/analytics/peak-times", {
-    headers: { "Authorization": "Bearer " + token }
-  });
-  const peak = await peakRes.json();
-fetch("/api/analytics/bookings/stats")
-  .then(res => res.json())
-  .then(data => {
-    document.getElementById("stats").innerText = data.total_bookings;
-  });
-  document.getElementById("peak").innerHTML =
-    peak.hourly_peak_times.map(p => `${p.hour}:00 → ${p.booking_count}`).join("<br>");
-}
+      if (!data || data.length === 0) {
+        venuesEl.innerHTML = `<div class="empty-state">No venue usage data available</div>`;
+        return;
+      }
 
-loadAnalytics();
+      venuesEl.innerHTML = `
+        <ul class="venue-list">
+          ${data.map(venue => `
+            <li>
+              <div><span class="metric-label">${venue.venue_name}</span></div>
+              <div>
+                ${venue.booking_count} bookings • ${venue.total_hours_booked} hours
+                <button class="map-btn" onclick="openMap(${venue.venue_id})">View Map</button>
+              </div>
+            </li>
+          `).join("")}
+        </ul>
+      `;
+    } catch (error) {
+      venuesEl.innerHTML = `<div class="error-state">Failed to load venue usage</div>`;
+      console.error(error);
+    }
+  }
+
+  async function loadPeakTimes() {
+    const peakEl = document.getElementById("peak-times");
+    peakEl.innerHTML = "Loading peak times...";
+
+    try {
+      const response = await fetch("/api/analytics/peak-times");
+      const data = await response.json();
+
+      const hourlyData = data.hourly_peak_times || [];
+      const weekdayData = data.weekday_peak_times || [];
+
+      const hourlyHtml = hourlyData.length > 0
+        ? `
+          <ul class="peak-list">
+            ${hourlyData.map(item => `
+              <li>${item.hour}:00 → ${item.booking_count} bookings</li>
+            `).join("")}
+          </ul>
+        `
+        : `<div class="empty-state">No hourly data available</div>`;
+
+      const weekdayHtml = weekdayData.length > 0
+        ? `
+          <ul class="peak-list">
+            ${weekdayData.map(item => `
+              <li>${item.day}: ${item.booking_count} bookings</li>
+            `).join("")}
+          </ul>
+        `
+        : `<div class="empty-state">No weekday data available</div>`;
+
+      peakEl.innerHTML = `
+        <div class="peak-columns">
+          <div>
+            <div class="subheading">By hour</div>
+            ${hourlyHtml}
+          </div>
+          <div>
+            <div class="subheading">By weekday</div>
+            ${weekdayHtml}
+          </div>
+        </div>
+      `;
+    } catch (error) {
+      peakEl.innerHTML = `<div class="error-state">Failed to load peak times</div>`;
+      console.error(error);
+    }
+  }
+
+  async function openMap(id) {
+    try {
+      const response = await fetch(`/api/venues/${id}/map`);
+      const data = await response.json();
+
+      if (data.google_maps_url) {
+        window.open(data.google_maps_url, "_blank");
+      } else {
+        alert("Map not available");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Failed to open map");
+    }
+  }
+
+  function refreshAnalytics() {
+    loadBookingStats();
+    loadVenueUsage();
+    loadPeakTimes();
+  }
+
+  loadBookingStats();
+  loadVenueUsage();
+  loadPeakTimes();
 </script>
