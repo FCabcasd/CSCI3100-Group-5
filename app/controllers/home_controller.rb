@@ -7,4 +7,7 @@ class HomeController < ApplicationController
 
   def analytics
   end
+
+  def profile
+  end
 end

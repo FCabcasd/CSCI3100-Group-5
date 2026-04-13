@@ -1,14 +1,61 @@
 <div class="menu-page">
-  <header>
+  <header class="menu-header">
     <h1>Application Menu</h1>
     <p>Quick access to key pages.</p>
   </header>
 
   <nav class="menu-links">
     <ul>
-      <li><%= link_to "Bookings", bookings_path %></li>
-      <li><%= link_to "Admin Users", api_admin_users_path %></li>
-      <li><%= link_to "My Profile", api_auth_me_path %></li>
+      <li><%= link_to "Home", root_path, class: "menu-link" %></li>
+      <li><%= link_to "Bookings", bookings_path, class: "menu-link" %></li>
+      <li><%= link_to "Analytics Dashboard", "/analytics", class: "menu-link" %></li>
+      <li><%= link_to "Admin Users", api_admin_users_path, class: "menu-link" %></li>
+      <li><%= link_to "My Profile", "/profile", class: "menu-link" %></li>
     </ul>
   </nav>
 </div>
+
+<style>
+  .menu-page {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 0 20px;
+    font-family: Arial, sans-serif;
+    color: #1f2937;
+  }
+
+  .menu-header h1 {
+    margin-bottom: 8px;
+    font-size: 40px;
+  }
+
+  .menu-header p {
+    color: #6b7280;
+    margin-bottom: 28px;
+  }
+
+  .menu-links ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 14px;
+  }
+
+  .menu-link {
+    display: block;
+    padding: 16px 18px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #111827;
+    background: white;
+    font-weight: 600;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+  }
+
+  .menu-link:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+  }
+</style>
