@@ -100,12 +100,13 @@
         }
 
         if (type === "login") {
-          if (result.access_token) {
-            window.location.href = "<%= menu_path %>";
-            return;
-          }
-          throw new Error("Login succeeded but response is missing access_token.");
-        }
+  if (result.access_token) {
+    localStorage.setItem("token", result.access_token);
+    window.location.href = "<%= menu_path %>";
+    return;
+  }
+  throw new Error("Login succeeded but response is missing access_token.");
+}
 
         if (type === "register") {
           if (result.id) {

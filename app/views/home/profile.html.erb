@@ -1,0 +1,180 @@
+<div class="profile-page">
+  <div class="profile-header">
+    <div>
+      <h1>My Profile</h1>
+      <p class="subtitle">View your account information and current status.</p>
+    </div>
+    <div class="profile-actions">
+      <a href="/menu" class="secondary-btn">Back to Menu</a>
+      <button class="danger-btn" onclick="logout()">Log Out</button>
+    </div>
+  </div>
+
+  <section class="profile-card">
+    <div id="profile" class="profile-content">Loading...</div>
+  </section>
+</div>
+
+<style>
+  .profile-page {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 20px 40px;
+    font-family: Arial, sans-serif;
+    color: #1f2937;
+  }
+
+  .profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .profile-header h1 {
+    margin: 0;
+    font-size: 40px;
+    line-height: 1.1;
+  }
+
+  .subtitle {
+    margin-top: 8px;
+    color: #6b7280;
+    font-size: 15px;
+  }
+
+  .profile-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .secondary-btn,
+  .danger-btn {
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .secondary-btn {
+    background: #2563eb;
+    color: white;
+  }
+
+  .secondary-btn:hover {
+    background: #1d4ed8;
+  }
+
+  .danger-btn {
+    background: #dc2626;
+    color: white;
+  }
+
+  .danger-btn:hover {
+    background: #b91c1c;
+  }
+
+  .profile-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  }
+
+  .profile-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .profile-list li {
+    padding: 12px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .profile-list li:last-child {
+    border-bottom: none;
+  }
+
+  .label {
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .muted {
+    color: #6b7280;
+    font-style: italic;
+  }
+
+  .error-state {
+    color: #b91c1c;
+    font-weight: 600;
+  }
+
+  @media (max-width: 768px) {
+    .profile-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .profile-actions {
+      width: 100%;
+      flex-wrap: wrap;
+    }
+  }
+</style>
+
+<script>
+  async function loadProfile() {
+    const token = localStorage.getItem("token");
+    const profileEl = document.getElementById("profile");
+
+    if (!token) {
+      profileEl.innerHTML = `<div class="muted">No token found. Please log in first.</div>`;
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/auth/me", {
+        headers: {
+          "Authorization": "Bearer " + token,
+          "Accept": "application/json"
+        }
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        profileEl.innerHTML = `<div class="error-state">${data.error || "Failed to load profile"}</div>`;
+        return;
+      }
+
+      profileEl.innerHTML = `
+        <ul class="profile-list">
+          <li><span class="label">Username:</span> ${data.username}</li>
+          <li><span class="label">Full name:</span> ${data.full_name}</li>
+          <li><span class="label">Email:</span> ${data.email}</li>
+          <li><span class="label">Role:</span> ${data.role}</li>
+          <li><span class="label">Tenant ID:</span> ${data.tenant_id ?? "N/A"}</li>
+          <li><span class="label">Points:</span> ${data.points}</li>
+        </ul>
+      `;
+    } catch (error) {
+      profileEl.innerHTML = `<div class="error-state">Failed to load profile</div>`;
+      console.error(error);
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem("token");
+    window.location.href = "/";
+  }
+
+  loadProfile();
+</script>
