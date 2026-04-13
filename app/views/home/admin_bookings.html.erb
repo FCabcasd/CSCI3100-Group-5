@@ -57,20 +57,34 @@ async function performBookingAction(action, bookingId) {
 }
 
 async function loadAdminBookings() {
-    const token = localStorage.getItem("token");
-    const res = await fetch("/api/admin/bookings", {
-        headers: { "Authorization": "Bearer " + token }
-    });
-    if (!res.ok) {
-        document.getElementById("admin-bookings").innerText = "Failed to load bookings.";
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+        adminUsersDiv.innerHTML = '<b style="color:red">Error: No login session found. Please Sign In.</b>';
         return;
     }
-    const bookings = await res.json();
-    document.getElementById("admin-bookings").innerHTML = bookings.map(b => `
-        <div class="booking-entry">
-            <strong>${b.venue_name}</strong> - ${b.booking_time} - ${b.status}
-            <button onclick="performBookingAction('admin/force_cancel', ${b.id})">ForceCancel</button>
-        </div>
-    `).join("");
+    try {
+        const res = await fetch("/api/bookings", {    
+            headers: { "Authorization": "Bearer " + token }
+        });
+        if (!res.ok) {
+            document.getElementById("admin-bookings").innerText = "Failed to load bookings.";
+            return;
+        }
+        const bookings = await res.json();
+        if (bookings.length === 0) {
+            document.getElementById("admin-bookings").innerText = "No bookings found.";
+            return;
+        }
+        document.getElementById("admin-bookings").innerHTML = bookings.map(b => `
+            <div class="booking-entry">
+                <strong>${b.venue_name}</strong> - ${b.booking_time} - ${b.status}
+                <button onclick="performBookingAction('force_cancel', ${b.id})">Force Cancel</button>
+            </div>
+        `).join("");
+    } catch (err) {
+        console.error(err);
+        document.getElementById("admin-bookings").innerText = "Error loading bookings.";
+    }
 }
+loadAdminBookings();
 </script>
