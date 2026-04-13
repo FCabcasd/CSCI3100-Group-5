@@ -1,141 +1,246 @@
 <div class="auth-page">
-  <header class="auth-header">
-    <h1>Welcome Back</h1>
-    <p>Sign in to your account or create a new one to continue.</p>
-  </header>
+  <!-- Brand -->
+  <div class="auth-brand">
+    <h1><i class="bi bi-building"></i> CUHK Venue Booking</h1>
+    <p>Book venues &amp; equipment across departments</p>
+  </div>
 
-  <div id="auth-message" class="auth-message"></div>
+  <!-- Alert -->
+  <div id="auth-alert" class="auth-alert alert" role="alert">
+    <i id="alert-icon"></i>
+    <span id="alert-text"></span>
+  </div>
 
-  <div class="auth-forms">
-    <section class="auth-card">
-      <h2>Login</h2>
-      <%= form_with url: api_auth_login_path, local: true, method: :post, html: { id: "login-form" } do |form| %>
-        <div class="field">
-          <%= form.label :email, "Email" %>
-          <%= form.email_field :email, required: true, autofocus: true %>
+  <!-- Glass Card -->
+  <div class="glass-card">
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab-btn active" data-tab="login">Sign In</button>
+      <button class="auth-tab-btn" data-tab="register">Create Account</button>
+    </div>
+
+    <!-- Login Panel -->
+    <div id="login-panel" class="auth-panel active">
+      <form id="login-form" novalidate>
+        <div class="input-group-icon">
+          <i class="bi bi-envelope"></i>
+          <input type="email" id="login-email" placeholder="Email address" required autocomplete="email">
         </div>
 
-        <div class="field">
-          <%= form.label :password, "Password" %>
-          <%= form.password_field :password, required: true %>
+        <div class="input-group-icon">
+          <i class="bi bi-lock"></i>
+          <input type="password" id="login-password" placeholder="Password" required autocomplete="current-password">
+          <button type="button" class="password-toggle" tabindex="-1"><i class="bi bi-eye"></i></button>
         </div>
 
-        <div class="actions">
-          <%= form.submit "Log In" %>
-        </div>
-      <% end %>
-    </section>
+        <button type="submit" class="btn-auth btn-auth-primary" id="login-btn">
+          Sign In
+        </button>
+      </form>
+    </div>
 
-    <section class="auth-card">
-      <h2>Register</h2>
-      <%= form_with url: api_auth_register_path, local: true, method: :post, html: { id: "register-form" } do |form| %>
-        <div class="field">
-          <%= form.label :username, "Username" %>
-          <%= form.text_field :username, required: true %>
-        </div>
-
-        <div class="field">
-          <%= form.label :full_name, "Full Name" %>
-          <%= form.text_field :full_name, required: true %>
+    <!-- Register Panel -->
+    <div id="register-panel" class="auth-panel">
+      <form id="register-form" novalidate>
+        <div class="input-group-icon">
+          <i class="bi bi-person"></i>
+          <input type="text" id="reg-username" placeholder="Username" required minlength="2">
         </div>
 
-        <div class="field">
-          <%= form.label :email, "Email" %>
-          <%= form.email_field :email, required: true %>
+        <div class="input-group-icon">
+          <i class="bi bi-person-badge"></i>
+          <input type="text" id="reg-fullname" placeholder="Full Name" required>
         </div>
 
-        <div class="field">
-          <%= form.label :password, "Password" %>
-          <%= form.password_field :password, required: true %>
+        <div class="input-group-icon">
+          <i class="bi bi-envelope"></i>
+          <input type="email" id="reg-email" placeholder="Email address" required autocomplete="email">
         </div>
 
-        <div class="field">
-          <%= form.label :password_confirmation, "Confirm Password" %>
-          <%= form.password_field :password_confirmation, required: true %>
+        <div class="input-group-icon">
+          <i class="bi bi-lock"></i>
+          <input type="password" id="reg-password" placeholder="Password (min 6 chars)" required minlength="6" autocomplete="new-password">
+          <button type="button" class="password-toggle" tabindex="-1"><i class="bi bi-eye"></i></button>
+        </div>
+        <div class="password-strength" aria-hidden="true"><div id="strength-bar" class="password-strength-bar"></div></div>
+
+        <div class="input-group-icon">
+          <i class="bi bi-lock-fill"></i>
+          <input type="password" id="reg-password-confirm" placeholder="Confirm Password" required minlength="6" autocomplete="new-password">
         </div>
 
-        <div class="actions">
-          <%= form.submit "Register" %>
-        </div>
-      <% end %>
-    </section>
+        <button type="submit" class="btn-auth btn-auth-primary" id="register-btn">
+          Create Account
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="auth-footer">
+    &copy; 2026 CUHK Venue &amp; Equipment Booking System
   </div>
 </div>
 
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const loginForm = document.getElementById("login-form");
-    const registerForm = document.getElementById("register-form");
-    const authMessage = document.getElementById("auth-message");
+document.addEventListener("DOMContentLoaded", () => {
+  /* ---- Redirect if already logged in ---- */
+  if (localStorage.getItem("access_token")) {
+    window.location.href = "<%= menu_path %>";
+    return;
+  }
 
-    const showMessage = (message, isError = true) => {
-      authMessage.textContent = message;
-      authMessage.className = "auth-message" + (message ? (isError ? " error" : " success") : "");
-    };
+  /* ---- Elements ---- */
+  const alertBox  = document.getElementById("auth-alert");
+  const alertIcon = document.getElementById("alert-icon");
+  const alertText = document.getElementById("alert-text");
+  const tabs      = document.querySelectorAll(".auth-tab-btn");
+  const panels    = document.querySelectorAll(".auth-panel");
+  const loginForm    = document.getElementById("login-form");
+  const registerForm = document.getElementById("register-form");
+  const loginBtn     = document.getElementById("login-btn");
+  const registerBtn  = document.getElementById("register-btn");
+  const strengthBar   = document.getElementById("strength-bar");
 
-    const parseError = (json, status) => {
-      if (!json) return `Request failed with status ${status}`;
-      if (json.error) return json.error;
-      if (json.errors) return Array.isArray(json.errors) ? json.errors.join(", ") : json.errors;
-      return `Request failed with status ${status}`;
-    };
-
-    const submitAuthForm = async (event, url, payload, type) => {
-      event.preventDefault();
-      showMessage("");
-
-      try {
-        const response = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-          },
-          body: JSON.stringify(payload)
-        });
-
-        const result = await response.json().catch(() => null);
-        if (!response.ok) {
-          throw new Error(parseError(result, response.status));
-        }
-
-        if (type === "login") {
-          if (result.access_token) {
-            window.location.href = "<%= menu_path %>";
-            return;
-          }
-          throw new Error("Login succeeded but response is missing access_token.");
-        }
-
-        if (type === "register") {
-          if (result.id) {
-            showMessage("Registration successful. Please log in using the form above.", false);
-            return;
-          }
-          throw new Error("Registration succeeded but response is missing user data.");
-        }
-      } catch (error) {
-        showMessage(error.message || "Authentication failed.");
-      }
-    };
-
-    loginForm?.addEventListener("submit", (event) => {
-      const formData = new FormData(loginForm);
-      submitAuthForm(event, "<%= api_auth_login_path %>", {
-        email: formData.get("email"),
-        password: formData.get("password")
-      }, "login");
-    });
-
-    registerForm?.addEventListener("submit", (event) => {
-      const formData = new FormData(registerForm);
-      submitAuthForm(event, "<%= api_auth_register_path %>", {
-        username: formData.get("username"),
-        full_name: formData.get("full_name"),
-        email: formData.get("email"),
-        password: formData.get("password"),
-        password_confirmation: formData.get("password_confirmation")
-      }, "register");
+  /* ---- Tab switching ---- */
+  tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      tabs.forEach(t => t.classList.remove("active"));
+      panels.forEach(p => p.classList.remove("active"));
+      tab.classList.add("active");
+      document.getElementById(tab.dataset.tab + "-panel").classList.add("active");
+      hideAlert();
     });
   });
+
+  /* ---- Password visibility toggle ---- */
+  document.querySelectorAll(".password-toggle").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const input = btn.previousElementSibling;
+      const icon  = btn.querySelector("i");
+      if (input.type === "password") {
+        input.type = "text";
+        icon.classList.replace("bi-eye", "bi-eye-slash");
+      } else {
+        input.type = "password";
+        icon.classList.replace("bi-eye-slash", "bi-eye");
+      }
+    });
+  });
+
+  /* ---- Password strength meter ---- */
+  document.getElementById("reg-password").addEventListener("input", (e) => {
+    const val = e.target.value;
+    strengthBar.className = "password-strength-bar";
+    if (val.length === 0) return;
+    if (val.length < 6) { strengthBar.classList.add("strength-weak"); }
+    else if (val.length < 10 || !/[A-Z]/.test(val) || !/[0-9]/.test(val)) { strengthBar.classList.add("strength-medium"); }
+    else { strengthBar.classList.add("strength-strong"); }
+  });
+
+  /* ---- Alert helpers ---- */
+  function showAlert(msg, type) {
+    alertBox.className = "auth-alert alert alert-" + type + " show";
+    alertIcon.className = "bi " + (type === "success" ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill");
+    alertText.textContent = msg;
+  }
+  function hideAlert() { alertBox.className = "auth-alert alert"; }
+
+  function parseError(json, status) {
+    if (!json) return "Request failed (status " + status + ")";
+    if (json.error) return json.error;
+    if (json.errors) return Array.isArray(json.errors) ? json.errors.join(", ") : json.errors;
+    return "Request failed (status " + status + ")";
+  }
+
+  function setLoading(btn, loading) {
+    if (loading) {
+      btn.disabled = true;
+      btn.dataset.origText = btn.textContent;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Please wait…';
+    } else {
+      btn.disabled = false;
+      btn.textContent = btn.dataset.origText;
+    }
+  }
+
+  /* ---- Login ---- */
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    hideAlert();
+    const email    = document.getElementById("login-email").value.trim();
+    const password = document.getElementById("login-password").value;
+
+    if (!email || !password) { showAlert("Please fill in all fields.", "danger"); return; }
+
+    setLoading(loginBtn, true);
+    try {
+      const res = await fetch("<%= api_auth_login_path %>", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(parseError(data, res.status));
+      if (!data.access_token) throw new Error("Login succeeded but no token returned.");
+
+      /* Store tokens */
+      localStorage.setItem("access_token", data.access_token);
+      localStorage.setItem("refresh_token", data.refresh_token);
+
+      showAlert("Login successful! Redirecting…", "success");
+      setTimeout(() => { window.location.href = "<%= menu_path %>"; }, 600);
+    } catch (err) {
+      showAlert(err.message || "Login failed.", "danger");
+      setLoading(loginBtn, false);
+    }
+  });
+
+  /* ---- Register ---- */
+  registerForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    hideAlert();
+    const username  = document.getElementById("reg-username").value.trim();
+    const fullName  = document.getElementById("reg-fullname").value.trim();
+    const email     = document.getElementById("reg-email").value.trim();
+    const password  = document.getElementById("reg-password").value;
+    const confirm   = document.getElementById("reg-password-confirm").value;
+
+    if (!username || !fullName || !email || !password || !confirm) {
+      showAlert("Please fill in all fields.", "danger"); return;
+    }
+    if (password.length < 6) {
+      showAlert("Password must be at least 6 characters.", "danger"); return;
+    }
+    if (password !== confirm) {
+      showAlert("Passwords do not match.", "danger"); return;
+    }
+
+    setLoading(registerBtn, true);
+    try {
+      const res = await fetch("<%= api_auth_register_path %>", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({ username, full_name: fullName, email, password, password_confirmation: confirm })
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(parseError(data, res.status));
+      if (!data.id) throw new Error("Registration succeeded but response is missing user data.");
+
+      showAlert("Account created! Please sign in.", "success");
+      registerForm.reset();
+      strengthBar.className = "password-strength-bar";
+      /* Switch to login tab */
+      setTimeout(() => {
+        tabs[0].click();
+        document.getElementById("login-email").value = email;
+        document.getElementById("login-password").focus();
+      }, 800);
+    } catch (err) {
+      showAlert(err.message || "Registration failed.", "danger");
+    } finally {
+      setLoading(registerBtn, false);
+    }
+  });
+});
 </script>

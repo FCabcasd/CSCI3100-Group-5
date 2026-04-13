@@ -1,10 +1,312 @@
 /*
- * This is a manifest file that'll be compiled into application.css.
- *
- * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
- * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
- * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
- * depending on specificity.
- *
- * Consider organizing styles into separate files for maintainability.
+ * CUHK Venue & Equipment Booking System
+ * Global Styles
  */
+
+/* ========== Root Variables ========== */
+:root {
+  --cuhk-purple: #7b2d8e;
+  --cuhk-gold: #f0c75e;
+  --glass-bg: rgba(255, 255, 255, 0.82);
+  --glass-border: rgba(255, 255, 255, 0.35);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  --blur-amount: 18px;
+  --transition-speed: 0.3s;
+}
+
+/* ========== Auth Page (Login / Register) ========== */
+.auth-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(123, 45, 142, 0.25) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(74, 26, 107, 0.2) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 100%, rgba(240, 199, 94, 0.1) 0%, transparent 50%),
+    linear-gradient(160deg, #1a0a3e 0%, #2d1b69 30%, #1e1e4a 60%, #0f0f2d 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/* Brand header */
+.auth-brand {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #fff;
+}
+.auth-brand h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.3rem;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+}
+.auth-brand p {
+  font-size: 1.05rem;
+  opacity: 0.88;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.3);
+}
+
+/* Glass Card */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--blur-amount));
+  -webkit-backdrop-filter: blur(var(--blur-amount));
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  box-shadow: var(--glass-shadow);
+  padding: 2.5rem 2.2rem 2rem;
+  width: 100%;
+  max-width: 440px;
+  box-sizing: border-box;
+  overflow: visible;
+  transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+}
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Tab buttons */
+.auth-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.8rem;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e0d6f0;
+}
+.auth-tab-btn {
+  flex: 1;
+  padding: 0.7rem 0;
+  border: none;
+  background: transparent;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #7b7b9a;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
+.auth-tab-btn.active {
+  background: var(--cuhk-purple);
+  color: #fff;
+}
+.auth-tab-btn:not(.active):hover {
+  background: rgba(123, 45, 142, 0.08);
+}
+
+/* Form panels */
+.auth-panel { display: none; }
+.auth-panel.active { display: block; animation: fadeSlide 0.35s ease; }
+
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Input groups */
+.input-group-icon {
+  position: relative;
+  margin-bottom: 1.1rem;
+}
+.input-group-icon i {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9b8fb8;
+  font-size: 1.05rem;
+  z-index: 1;
+  pointer-events: none;
+}
+.input-group-icon input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.72rem 2.8rem 0.72rem 2.6rem;
+  border: 1.5px solid #e0d6f0;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  background: rgba(255,255,255,0.7);
+  transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+  outline: none;
+}
+.input-group-icon input:focus {
+  border-color: var(--cuhk-purple);
+  box-shadow: 0 0 0 3px rgba(123, 45, 142, 0.12);
+  background: #fff;
+}
+.input-group-icon input::placeholder {
+  color: #b0a8c4;
+}
+
+/* Password toggle */
+.password-toggle {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #9b8fb8;
+  cursor: pointer;
+  padding: 0;
+  font-size: 1.1rem;
+  z-index: 1;
+}
+.password-toggle:hover { color: var(--cuhk-purple); }
+
+/* Password strength indicator */
+.password-strength {
+  height: 4px;
+  border-radius: 2px;
+  background: #e9e3f0;
+  margin-top: -0.6rem;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.password-strength-bar {
+  height: 100%;
+  width: 0;
+  border-radius: 2px;
+  transition: width 0.4s, background 0.4s;
+}
+.strength-weak    { width: 33%; background: #dc3545; }
+.strength-medium  { width: 66%; background: var(--cuhk-gold); }
+.strength-strong  { width: 100%; background: #198754; }
+
+/* Submit button */
+.btn-auth {
+  width: 100%;
+  padding: 0.78rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+  margin-top: 0.5rem;
+}
+.btn-auth-primary {
+  background: linear-gradient(135deg, var(--cuhk-purple), #9b4dca);
+  color: #fff;
+}
+.btn-auth-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #6a1f7a, #8a3cb8);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(123, 45, 142, 0.35);
+}
+.btn-auth:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+.btn-auth .spinner-border {
+  width: 1rem;
+  height: 1rem;
+  border-width: 2px;
+  margin-right: 0.5rem;
+}
+
+/* Alert messages */
+.auth-alert {
+  border-radius: 10px;
+  font-size: 0.9rem;
+  padding: 0.7rem 1rem;
+  margin-bottom: 1.2rem;
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+}
+.auth-alert.show { display: flex; animation: fadeSlide 0.3s ease; }
+.auth-alert i { font-size: 1.1rem; flex-shrink: 0; }
+
+
+/* Footer */
+.auth-footer {
+  margin-top: 1.5rem;
+  text-align: center;
+  color: rgba(255,255,255,0.7);
+  font-size: 0.85rem;
+}
+.auth-footer a { color: var(--cuhk-gold); text-decoration: none; }
+.auth-footer a:hover { text-decoration: underline; }
+
+/* ========== Menu / Dashboard ========== */
+.dashboard-page {
+  min-height: 100vh;
+  background: #f4f0fa;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+.dashboard-nav {
+  background: linear-gradient(135deg, var(--cuhk-purple), #4a1a6b);
+  padding: 1rem 2rem;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+.dashboard-nav .brand { font-size: 1.2rem; font-weight: 700; }
+.dashboard-nav .user-info { display: flex; align-items: center; gap: 1rem; font-size: 0.9rem; }
+.btn-logout {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #fff;
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all var(--transition-speed);
+}
+.btn-logout:hover { background: rgba(255,255,255,0.25); }
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.2rem;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.dash-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.dash-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  color: inherit;
+}
+.dash-card .card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+.dash-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
+.dash-card p { font-size: 0.85rem; color: #6b7280; margin: 0; }
+
+/* ========== Responsive ========== */
+@media (max-width: 480px) {
+  .glass-card { padding: 1.8rem 1.4rem 1.5rem; margin: 0 0.5rem; }
+  .auth-brand h1 { font-size: 1.6rem; }
+  .dashboard-grid { padding: 1rem; grid-template-columns: 1fr; }
+  .dashboard-nav { padding: 0.8rem 1rem; flex-wrap: wrap; gap: 0.5rem; }
+}

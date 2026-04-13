@@ -1,14 +1,109 @@
-<div class="menu-page">
-  <header>
-    <h1>Application Menu</h1>
-    <p>Quick access to key pages.</p>
-  </header>
-
-  <nav class="menu-links">
-    <ul>
-      <li><%= link_to "Bookings", bookings_path %></li>
-      <li><%= link_to "Admin Users", api_admin_users_path %></li>
-      <li><%= link_to "My Profile", api_auth_me_path %></li>
-    </ul>
+<div class="dashboard-page">
+  <!-- Navigation -->
+  <nav class="dashboard-nav">
+    <span class="brand"><i class="bi bi-building"></i> CUHK Venue Booking</span>
+    <div class="user-info">
+      <span id="user-greeting"></span>
+      <span class="badge bg-light text-dark" id="user-points"></span>
+      <button class="btn-logout" id="logout-btn"><i class="bi bi-box-arrow-right"></i> Logout</button>
+    </div>
   </nav>
+
+  <!-- Dashboard Cards -->
+  <div class="dashboard-grid" id="dashboard-grid">
+    <a href="/catalog" class="dash-card">
+      <div class="card-icon" style="background:linear-gradient(135deg,#7b2d8e,#9b4dca)">
+        <i class="bi bi-geo-alt"></i>
+      </div>
+      <div>
+        <h3>Browse Venues</h3>
+        <p>Search and explore available venues</p>
+      </div>
+    </a>
+
+    <a href="/equipment" class="dash-card">
+      <div class="card-icon" style="background:linear-gradient(135deg,#2d6a8e,#4d9eca)">
+        <i class="bi bi-tools"></i>
+      </div>
+      <div>
+        <h3>Equipment</h3>
+        <p>View and book equipment</p>
+      </div>
+    </a>
+
+    <a href="/user_bookings" class="dash-card">
+      <div class="card-icon" style="background:linear-gradient(135deg,#8e6a2d,#caa04d)">
+        <i class="bi bi-calendar-check"></i>
+      </div>
+      <div>
+        <h3>My Bookings</h3>
+        <p>View, manage and check in</p>
+      </div>
+    </a>
+
+    <a href="/venue_bookings" class="dash-card">
+      <div class="card-icon" style="background:linear-gradient(135deg,#2d8e6a,#4dcaa0)">
+        <i class="bi bi-calendar3"></i>
+      </div>
+      <div>
+        <h3>Venue Calendar</h3>
+        <p>See venue availability</p>
+      </div>
+    </a>
+
+    <!-- Admin-only cards (hidden by default) -->
+    <a href="/admin_panel" class="dash-card admin-card" style="display:none">
+      <div class="card-icon" style="background:linear-gradient(135deg,#8e2d2d,#ca4d4d)">
+        <i class="bi bi-shield-lock"></i>
+      </div>
+      <div>
+        <h3>Admin Panel</h3>
+        <p>Manage users and bookings</p>
+      </div>
+    </a>
+
+    <a href="/analytics" class="dash-card admin-card" style="display:none">
+      <div class="card-icon" style="background:linear-gradient(135deg,#4a2d8e,#7a4dca)">
+        <i class="bi bi-bar-chart-line"></i>
+      </div>
+      <div>
+        <h3>Analytics</h3>
+        <p>Usage stats and reports</p>
+      </div>
+    </a>
+  </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const token = localStorage.getItem("access_token");
+  if (!token) { window.location.href = "/"; return; }
+
+  /* Fetch current user info */
+  fetch("<%= api_auth_me_path %>", {
+    headers: { "Authorization": "Bearer " + token, "Accept": "application/json" }
+  })
+  .then(res => {
+    if (!res.ok) { localStorage.clear(); window.location.href = "/"; return; }
+    return res.json();
+  })
+  .then(user => {
+    if (!user) return;
+    document.getElementById("user-greeting").textContent = "Hi, " + (user.full_name || user.username);
+    document.getElementById("user-points").innerHTML = '<i class="bi bi-coin"></i> ' + user.points + " pts";
+
+    /* Show admin cards */
+    if (user.role === "admin" || user.role === "tenant_admin") {
+      document.querySelectorAll(".admin-card").forEach(c => c.style.display = "flex");
+    }
+  })
+  .catch(() => { localStorage.clear(); window.location.href = "/"; });
+
+  /* Logout */
+  document.getElementById("logout-btn").addEventListener("click", () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    window.location.href = "/";
+  });
+});
+</script>
