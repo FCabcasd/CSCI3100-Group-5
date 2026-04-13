@@ -154,7 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (loading) {
       btn.disabled = true;
       btn.dataset.origText = btn.textContent;
-      btn.innerHTML = 'Please wait...';
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Please wait...';
     } else {
       btn.disabled = false;
       btn.textContent = btn.dataset.origText;
@@ -178,10 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const res = await fetch("<%= api_auth_login_path %>", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify({ email, password })
       });
 
@@ -195,9 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       showAlert("Login successful! Redirecting...", "success");
-      setTimeout(() => {
-        window.location.href = "<%= menu_path %>";
-      }, 500);
+      setTimeout(() => { window.location.href = "<%= menu_path %>"; }, 600);
     } catch (err) {
       showAlert(err.message || "Login failed.", "danger");
       setLoading(loginBtn, false);
@@ -218,12 +213,10 @@ document.addEventListener("DOMContentLoaded", () => {
       showAlert("Please fill in all fields.", "danger");
       return;
     }
-
     if (password.length < 6) {
       showAlert("Password must be at least 6 characters.", "danger");
       return;
     }
-
     if (password !== confirm) {
       showAlert("Passwords do not match.", "danger");
       return;
@@ -234,10 +227,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const res = await fetch("<%= api_auth_register_path %>", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify({
           username,
           full_name: fullName,
@@ -259,7 +249,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tabs[0].click();
         document.getElementById("login-email").value = email;
         document.getElementById("login-password").focus();
-      }, 600);
+      }, 800);
     } catch (err) {
       showAlert(err.message || "Registration failed.", "danger");
     } finally {
