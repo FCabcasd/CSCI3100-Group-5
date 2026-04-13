@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   get "equipment", to: "home#equipment"
   get "venue_bookings", to: "home#venue_bookings"
   get "admin_panel", to: "home#admin_panel"
+  get "profile", to: "home#profile"
 
   get "up" => "rails/health#show", as: :rails_health_check
   root "home#index"
