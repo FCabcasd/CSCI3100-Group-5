@@ -98,14 +98,14 @@ module Api
     end
 
     def equipment_response(eq)
-      active_booked = eq.bookings.where(status: [:pending, :confirmed]).where("end_time > ?", Time.current).count
+      active_booked = eq.bookings.where(status: [ :pending, :confirmed ]).where("end_time > ?", Time.current).count
       {
         id: eq.id,
         tenant_id: eq.tenant_id,
         name: eq.name,
         description: eq.description,
         quantity: eq.quantity,
-        available_quantity: [eq.quantity - active_booked, 0].max,
+        available_quantity: [ eq.quantity - active_booked, 0 ].max,
         equipment_type: eq.equipment_type,
         status: eq.status,
         image_url: eq.image_url,

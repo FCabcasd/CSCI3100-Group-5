@@ -13,16 +13,16 @@ module Api
     def index
       bookings = if @current_user.admin?
                    Booking.all
-                 elsif @current_user.tenant_admin?
+      elsif @current_user.tenant_admin?
                    tenant_venue_ids = Venue.where(tenant_id: @current_user.tenant_id).pluck(:id)
                    tenant_equip_ids = Equipment.where(tenant_id: @current_user.tenant_id).pluck(:id)
                    booking_ids_from_equip = EquipmentBooking.where(equipment_id: tenant_equip_ids).pluck(:booking_id)
                    Booking.where(venue_id: tenant_venue_ids)
                           .or(Booking.where(id: booking_ids_from_equip))
                           .or(Booking.where(user_id: @current_user.id))
-                 else
+      else
                    @current_user.bookings
-                 end
+      end
       bookings = bookings.includes(:venue, :user, :equipment_list)
                          .order(created_at: :desc)
                          .offset(params[:skip].to_i)
