@@ -39,7 +39,11 @@ async function loadAnalytics() {
     headers: { "Authorization": "Bearer " + token }
   });
   const peak = await peakRes.json();
-
+fetch("/api/analytics/bookings/stats")
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("stats").innerText = data.total_bookings;
+  });
   document.getElementById("peak").innerHTML =
     peak.hourly_peak_times.map(p => `${p.hour}:00 → ${p.booking_count}`).join("<br>");
 }
