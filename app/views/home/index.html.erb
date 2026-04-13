@@ -1,1 +1,141 @@
-<h1>Hello World</h1>
+<div class="auth-page">
+  <header class="auth-header">
+    <h1>Welcome Back</h1>
+    <p>Sign in to your account or create a new one to continue.</p>
+  </header>
+
+  <div id="auth-message" class="auth-message"></div>
+
+  <div class="auth-forms">
+    <section class="auth-card">
+      <h2>Login</h2>
+      <%= form_with url: api_auth_login_path, local: true, method: :post, html: { id: "login-form" } do |form| %>
+        <div class="field">
+          <%= form.label :email, "Email" %>
+          <%= form.email_field :email, required: true, autofocus: true %>
+        </div>
+
+        <div class="field">
+          <%= form.label :password, "Password" %>
+          <%= form.password_field :password, required: true %>
+        </div>
+
+        <div class="actions">
+          <%= form.submit "Log In" %>
+        </div>
+      <% end %>
+    </section>
+
+    <section class="auth-card">
+      <h2>Register</h2>
+      <%= form_with url: api_auth_register_path, local: true, method: :post, html: { id: "register-form" } do |form| %>
+        <div class="field">
+          <%= form.label :username, "Username" %>
+          <%= form.text_field :username, required: true %>
+        </div>
+
+        <div class="field">
+          <%= form.label :full_name, "Full Name" %>
+          <%= form.text_field :full_name, required: true %>
+        </div>
+
+        <div class="field">
+          <%= form.label :email, "Email" %>
+          <%= form.email_field :email, required: true %>
+        </div>
+
+        <div class="field">
+          <%= form.label :password, "Password" %>
+          <%= form.password_field :password, required: true %>
+        </div>
+
+        <div class="field">
+          <%= form.label :password_confirmation, "Confirm Password" %>
+          <%= form.password_field :password_confirmation, required: true %>
+        </div>
+
+        <div class="actions">
+          <%= form.submit "Register" %>
+        </div>
+      <% end %>
+    </section>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const loginForm = document.getElementById("login-form");
+    const registerForm = document.getElementById("register-form");
+    const authMessage = document.getElementById("auth-message");
+
+    const showMessage = (message, isError = true) => {
+      authMessage.textContent = message;
+      authMessage.className = "auth-message" + (message ? (isError ? " error" : " success") : "");
+    };
+
+    const parseError = (json, status) => {
+      if (!json) return `Request failed with status ${status}`;
+      if (json.error) return json.error;
+      if (json.errors) return Array.isArray(json.errors) ? json.errors.join(", ") : json.errors;
+      return `Request failed with status ${status}`;
+    };
+
+    const submitAuthForm = async (event, url, payload, type) => {
+      event.preventDefault();
+      showMessage("");
+
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json().catch(() => null);
+        if (!response.ok) {
+          throw new Error(parseError(result, response.status));
+        }
+
+        if (type === "login") {
+          if (result.access_token) {
+            window.location.href = "<%= menu_path %>";
+            return;
+          }
+          throw new Error("Login succeeded but response is missing access_token.");
+        }
+
+        if (type === "register") {
+          if (result.id) {
+            showMessage("Registration successful. Please log in using the form above.", false);
+            return;
+          }
+          throw new Error("Registration succeeded but response is missing user data.");
+        }
+      } catch (error) {
+        showMessage(error.message || "Authentication failed.");
+      }
+    };
+
+    loginForm?.addEventListener("submit", (event) => {
+      const formData = new FormData(loginForm);
+      submitAuthForm(event, "<%= api_auth_login_path %>", {
+        email: formData.get("email"),
+        password: formData.get("password")
+      }, "login");
+    });
+
+    registerForm?.addEventListener("submit", (event) => {
+      const formData = new FormData(registerForm);
+      submitAuthForm(event, "<%= api_auth_register_path %>", {
+        username: formData.get("username"),
+        full_name: formData.get("full_name"),
+        email: formData.get("email"),
+        password: formData.get("password"),
+        password_confirmation: formData.get("password_confirmation")
+      }, "register");
+    });
+  });
+</script>
