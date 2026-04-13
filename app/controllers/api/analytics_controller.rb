@@ -17,7 +17,7 @@ module Api
     end
 
     def venue_usage
-      venues = tenant_scope(Venue).where(is_active: true)
+      venues = Venue.where(is_active: true)
 
       result = venues.map do |venue|
         venue_bookings = venue.bookings
