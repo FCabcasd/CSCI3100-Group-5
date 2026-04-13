@@ -149,25 +149,3 @@ open coverage/index.html
 | Channels | 75–100% |
 
 ## Feature Ownership
-
-| Feature Name | Primary Developer | Secondary Developer | Notes |
-|-------------|-------------------|--------------------|---------|
-| User Auth & Roles (JWT, BCrypt) | Cheung Ka Tsun | Zhiyu Wang | Register, Login, Refresh, Role-based access |
-| Venue CRUD & Search | Cheung Ka Tsun | Geyu Liu | Tenant-scoped venues, fuzzy search, browse |
-| Equipment CRUD & Search | Geyu Liu | Cheung Ka Tsun | Tenant-scoped equipment, quantity tracking |
-| Booking System (Create/Cancel) | Cheung Ka Tsun | Hung Hei Chit | Conflict detection, optimistic locking |
-| Recurring Bookings | Cheung Ka Tsun | Zhiyu Wang | Daily/weekly/monthly with conflict checks |
-| Approval Workflow (Confirm/Reject) | Zhiyu Wang | Cheung Ka Tsun | Admin/tenant_admin approval flow |
-| On-site Check-in | Hung Hei Chit | Cheung Ka Tsun | QR/manual check-in with timestamp |
-| Cancellation & Point Deduction | Cheung Ka Tsun | Pang Enoch | Late cancel penalty, configurable deadlines |
-| Admin Panel (Users/Force Cancel) | Zhiyu Wang | Cheung Ka Tsun | Suspend, delete users, emergency cancel |
-| Multi-tenant Architecture | Cheung Ka Tsun | Zhiyu Wang | Tenant scoping, data isolation |
-| Google Maps Integration | Geyu Liu | Cheung Ka Tsun | Venue location with lat/lng support |
-| AI Consultation (Gemini) | Cheung Ka Tsun | Hung Hei Chit | Q&A, venue recommendations, conflict analysis |
-| Real-time Notifications (ActionCable) | Hung Hei Chit | Cheung Ka Tsun | WebSocket booking events, JWT auth |
-| Email Notifications (Resend) | Pang Enoch | Cheung Ka Tsun | Booking confirm/cancel/admin emails |
-| Analytics Dashboard | Zhiyu Wang | Geyu Liu | Stats, venue usage, peak times |
-| i18n (EN/ZH) | Pang Enoch | Cheung Ka Tsun | Full bilingual support |
-| RSpec Tests (TDD) | Cheung Ka Tsun | Zhiyu Wang | 217 examples, 82%+ coverage |
-| Cucumber Tests (BDD) | Hung Hei Chit | Pang Enoch | 23 scenarios, 147 steps |
-| Heroku Deployment | Cheung Ka Tsun | x | PostgreSQL, Resend SMTP, CI/CD |
