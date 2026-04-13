@@ -4,7 +4,7 @@ A multi-tenant venue and equipment booking system for CUHK student societies. Ea
 
 ## Live Demo
 
-**Walking Skeleton URL:** https://group5app-e244cbe44724.herokuapp.com/
+**Deployed URL:** https://cuhk-venue-booking-aeee75bcd129.herokuapp.com/
 
 ## Team Information (Group 5)
 
@@ -21,10 +21,11 @@ A multi-tenant venue and equipment booking system for CUHK student societies. Ea
 - **Backend:** Ruby on Rails 8.1 (API mode)
 - **Auth:** BCrypt + JWT (HS256)
 - **Database:** SQLite (dev/test), PostgreSQL (production)
-- **Background Jobs:** Solid Queue
-- **Real-Time:** ActionCable (Solid Cable)
-- **AI:** OpenAI GPT-3.5 Turbo
-- **Email:** Action Mailer with async delivery
+- **Background Jobs:** ActiveJob (async adapter)
+- **Real-Time:** ActionCable (WebSockets)
+- **AI:** Google Gemini (gemini-2.5-flash-lite)
+- **Email:** Action Mailer + Resend SMTP
+- **Maps:** Google Maps integration
 - **Security:** Rack::Attack (rate limiting), Rack::Cors
 - **Testing:** RSpec, Cucumber, SimpleCov, FactoryBot
 - **Deployment:** Docker + Heroku
@@ -104,9 +105,10 @@ bundle exec cucumber
 | Variable | Description | Required |
 |----------|-------------|----------|
 | `SECRET_KEY_BASE` | JWT signing secret | Yes (production) |
-| `OPENAI_API_KEY` | OpenAI API key for AI features | No (graceful degradation) |
+| `GEMINI_API_KEY` | Google Gemini API key for AI features | No (graceful degradation) |
+| `RESEND_API_KEY` | Resend API key for email delivery | No |
+| `SMTP_FROM` | Default email sender address | No |
 | `CORS_ORIGINS` | Allowed CORS origins (comma-separated) | No (defaults localhost) |
-| `MAILER_SENDER` | Default email sender address | No |
 | `DATABASE_URL` | PostgreSQL connection URL | Yes (production) |
 
 ## Testing
@@ -126,15 +128,15 @@ open coverage/index.html
 
 | Suite | Total | Passed | Failed | Status |
 |-------|-------|--------|--------|--------|
-| RSpec | 212 examples | 212 | 0 | ✅ All passed |
+| RSpec | 217 examples | 217 | 0 | ✅ All passed |
 | Cucumber | 23 scenarios (147 steps) | 23 | 0 | ✅ All passed |
 
 ### Coverage
 
 | Metric | Result | Target |
 |--------|--------|--------|
-| Line Coverage | **93.7%** (548/585) | >80% |
-| Branch Coverage | **82.4%** (136/165) | >65% |
+| Line Coverage | **82.16%** (617/751) | >80% |
+| Branch Coverage | **72.2%** (148/205) | >65% |
 
 ### Key Coverage Highlights
 
@@ -145,3 +147,27 @@ open coverage/index.html
 | Controllers | 86–100% |
 | Mailers | 100% |
 | Channels | 75–100% |
+
+## Feature Ownership
+
+| Feature Name | Primary Developer | Secondary Developer | Notes |
+|-------------|-------------------|--------------------|---------|
+| User Auth & Roles (JWT, BCrypt) | Cheung Ka Tsun | Zhiyu Wang | Register, Login, Refresh, Role-based access |
+| Venue CRUD & Search | Cheung Ka Tsun | Geyu Liu | Tenant-scoped venues, fuzzy search, browse |
+| Equipment CRUD & Search | Geyu Liu | Cheung Ka Tsun | Tenant-scoped equipment, quantity tracking |
+| Booking System (Create/Cancel) | Cheung Ka Tsun | Hung Hei Chit | Conflict detection, optimistic locking |
+| Recurring Bookings | Cheung Ka Tsun | Zhiyu Wang | Daily/weekly/monthly with conflict checks |
+| Approval Workflow (Confirm/Reject) | Zhiyu Wang | Cheung Ka Tsun | Admin/tenant_admin approval flow |
+| On-site Check-in | Hung Hei Chit | Cheung Ka Tsun | QR/manual check-in with timestamp |
+| Cancellation & Point Deduction | Cheung Ka Tsun | Pang Enoch | Late cancel penalty, configurable deadlines |
+| Admin Panel (Users/Force Cancel) | Zhiyu Wang | Cheung Ka Tsun | Suspend, delete users, emergency cancel |
+| Multi-tenant Architecture | Cheung Ka Tsun | Zhiyu Wang | Tenant scoping, data isolation |
+| Google Maps Integration | Geyu Liu | Cheung Ka Tsun | Venue location with lat/lng support |
+| AI Consultation (Gemini) | Cheung Ka Tsun | Hung Hei Chit | Q&A, venue recommendations, conflict analysis |
+| Real-time Notifications (ActionCable) | Hung Hei Chit | Cheung Ka Tsun | WebSocket booking events, JWT auth |
+| Email Notifications (Resend) | Pang Enoch | Cheung Ka Tsun | Booking confirm/cancel/admin emails |
+| Analytics Dashboard | Zhiyu Wang | Geyu Liu | Stats, venue usage, peak times |
+| i18n (EN/ZH) | Pang Enoch | Cheung Ka Tsun | Full bilingual support |
+| RSpec Tests (TDD) | Cheung Ka Tsun | Zhiyu Wang | 217 examples, 82%+ coverage |
+| Cucumber Tests (BDD) | Hung Hei Chit | Pang Enoch | 23 scenarios, 147 steps |
+| Heroku Deployment | Cheung Ka Tsun | x | PostgreSQL, Resend SMTP, CI/CD |

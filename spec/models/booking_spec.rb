@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe Booking, type: :model do
   describe 'associations' do
     it { should belong_to(:user) }
-    it { should belong_to(:venue) }
+    it { should belong_to(:venue).optional }
     it { should have_many(:equipment_bookings).dependent(:destroy) }
     it { should have_many(:equipment_list).through(:equipment_bookings) }
     it { should have_one(:cancellation).dependent(:destroy) }
@@ -22,7 +22,7 @@ RSpec.describe Booking, type: :model do
   end
 
   describe 'enums' do
-    it { should define_enum_for(:status).with_values(pending: 0, confirmed: 1, cancelled: 2, completed: 3, no_show: 4) }
+    it { should define_enum_for(:status).with_values(pending: 0, confirmed: 1, cancelled: 2, completed: 3, no_show: 4, rejected: 5) }
   end
 
   describe 'scopes' do

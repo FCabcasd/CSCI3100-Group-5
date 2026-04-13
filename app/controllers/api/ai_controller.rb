@@ -38,7 +38,7 @@ module Api
     def status
       render json: {
         available: ai_service.available?,
-        message: ai_service.available? ? "AI consultant is ready" : "Please configure OPENAI_API_KEY"
+        message: ai_service.available? ? "AI consultant is ready" : "Please configure GEMINI_API_KEY"
       }
     end
 
