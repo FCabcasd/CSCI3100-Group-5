@@ -1,5 +1,5 @@
 module Api
-  class BaseController < ApplicationController
+  class BaseController < ActionController::Base
     skip_forgery_protection
 
     before_action :authorize_request

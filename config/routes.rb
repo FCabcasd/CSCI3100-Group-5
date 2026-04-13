@@ -2,11 +2,16 @@ Rails.application.routes.draw do
   get "home/index"
   get "menu", to: "home#menu"
   get "user_bookings", to: "home#user_bookings"
-  resources :bookings, only: [:index, :show]
+  resources :bookings, only: [ :index, :show ]
   get "catalog", to: "home#catalog"
   get "equipment", to: "home#equipment"
   get "venue_bookings", to: "home#venue_bookings"
-  get "admin_panel", to: "home#admin_panel"
+  
+  get "admin_users", to: "home#admin_users"
+  get "admin_bookings", to: "home#admin_bookings"
+
+
+  get "analytics", to: "home#analytics"
 
   get "up" => "rails/health#show", as: :rails_health_check
   root "home#index"
@@ -18,6 +23,7 @@ Rails.application.routes.draw do
     post "auth/refresh",  to: "auth#refresh"
     get  "auth/me",       to: "auth#me"
     get "analytics", to: "home#analytics"
+    
 
     # Bookings
     resources :bookings, only: [ :index, :show, :create ] do

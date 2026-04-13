@@ -1,0 +1,95 @@
+<h1>Admin Panel</h1>
+
+<a href="/admin_users" class="dash-card admin-card">
+      <div class="card-icon" style="background:linear-gradient(135deg,#8e2d2d,#ca4d4d)">
+        <i class="bi bi-shield-lock"></i>
+      </div>
+      <div>
+        <h3>Admin Users</h3>
+        <p>Manage users</p>
+      </div>
+    </a>
+<a href="/admin_bookings" class="dash-card admin-card">
+      <div class="card-icon" style="background:linear-gradient(135deg,#8e2d2d,#ca4d4d)">
+        <i class="bi bi-shield-lock"></i>
+      </div>
+      <div>
+        <h3>Admin Bookings</h3>
+        <p>Manage bookings</p>
+      </div>
+    </a>
+<div id="admin-users">Loading users...</div>
+<a href="/menu" class="dash-card">
+      <div class="card-icon" style="background:linear-gradient(135deg,#2d6a8e,#4d9eca)">
+        <i class="bi bi-house"></i>
+      </div>
+      <div>
+        <h3>Back to Menu</h3>
+        <p>Return to main dashboard</p>
+      </div>
+    </a>
+
+
+<script>
+// Helper function to handle Suspend and Delete actions
+async function performAction(action, userId) {
+    const token = localStorage.getItem("token");
+    const url = `/api/admin/${action}?id=${userId}`; // Matches the params[:id] in your controller
+    
+    if (!confirm(`Are you sure you want to ${action.replace('_', ' ')}?`)) return;
+
+    try {
+        const res = await fetch(url, {
+            method: action === 'delete_user' ? 'DELETE' : 'POST',
+            headers: { 
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json"
+            }
+        });
+
+        if (res.ok) {
+            alert(`User ${action.split('_')[0]}ed successfully`);
+            loadAdminUsers(); // Refresh the list without reloading the page
+        } else {
+            const errorData = await res.json();
+            alert("Error: " + (errorData.error || "Action failed"));
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Request failed.");
+    }
+}
+
+async function loadAdminUsers() {
+    const token = localStorage.getItem("token");
+    const res = await fetch("/api/admin/users", {
+        headers: { "Authorization": "Bearer " + token }
+    });
+
+    if (!res.ok) {
+        document.getElementById("admin-users").innerText = "Failed to load users.";
+        return;
+    }
+
+    const users = await res.json();
+    if (users.length === 0) {
+        document.getElementById("admin-users").innerText = "No users found.";
+        return;
+    }
+
+    // Added buttons to the template string
+    const userList = users.map(u => `
+        <li style="margin-bottom: 10px;">
+            <strong>${u.username}</strong> (${u.email}) - ${u.role}
+            <div style="display: inline-block; margin-left: 10px;">
+                <button onclick="performAction('suspend_user', ${u.id})" class="btn-suspend">Suspend</button>
+                <button onclick="performAction('delete_user', ${u.id})" class="btn-delete" style="color: red;">Delete</button>
+            </div>
+        </li>
+    `).join("");
+
+    document.getElementById("admin-users").innerHTML = `<ul>${userList}</ul>`;
+}
+
+loadAdminUsers();
+</script>
