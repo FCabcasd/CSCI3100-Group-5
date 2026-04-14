@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_12_123942) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_13_192850) do
   create_table "bookings", force: :cascade do |t|
     t.text "cancellation_reason"
     t.datetime "cancelled_at"
@@ -33,7 +33,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_12_123942) do
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
-    t.integer "venue_id", null: false
+    t.integer "venue_id"
     t.index ["start_time", "end_time"], name: "index_bookings_on_start_time_and_end_time"
     t.index ["status"], name: "index_bookings_on_status"
     t.index ["user_id"], name: "index_bookings_on_user_id"

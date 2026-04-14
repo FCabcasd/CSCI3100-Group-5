@@ -1,0 +1,90 @@
+<h1>Admin Panel</h1>
+
+<a href="/admin_users" class="dash-card admin-card">
+      <div class="card-icon" style="background:linear-gradient(135deg,#8e2d2d,#ca4d4d)">
+        <i class="bi bi-shield-lock"></i>
+      </div>
+      <div>
+        <h3>Admin Users</h3>
+        <p>Manage users</p>
+      </div>
+    </a>
+<a href="/admin_bookings" class="dash-card admin-card">
+      <div class="card-icon" style="background:linear-gradient(135deg,#8e2d2d,#ca4d4d)">
+        <i class="bi bi-shield-lock"></i>
+      </div>
+      <div>
+        <h3>Admin Bookings</h3>
+        <p>Manage bookings</p>
+      </div>
+    </a>
+<div id="admin-bookings">Loading bookings...</div>
+<a href="/menu" class="dash-card">
+      <div class="card-icon" style="background:linear-gradient(135deg,#2d6a8e,#4d9eca)">
+        <i class="bi bi-house"></i>
+      </div>
+      <div>
+        <h3>Back to Menu</h3>
+        <p>Return to main dashboard</p>
+      </div>
+    </a>
+
+
+<script>
+async function performBookingAction(action, bookingId) {
+    const token = localStorage.getItem("token");
+    const url = `/api/admin/${action}?id=${bookingId}`; // Matches the params[:id] in your controller
+    if (!confirm(`Are you sure you want to ${action.replace('_', ' ')}?`)) return;
+    try {
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json"
+            }
+        });
+        if (res.ok) {
+            alert(`Booking ${action.split('_')[0]}ed successfully`);
+            loadAdminBookings(); // Refresh the list without reloading the page
+        } else {
+            const errorData = await res.json();
+            alert("Error: " + (errorData.error || "Action failed"));
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Request failed.");
+    }
+}
+
+async function loadAdminBookings() {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+        adminUsersDiv.innerHTML = '<b style="color:red">Error: No login session found. Please Sign In.</b>';
+        return;
+    }
+    try {
+        const res = await fetch("/api/bookings", {    
+            headers: { "Authorization": "Bearer " + token }
+        });
+        if (!res.ok) {
+            document.getElementById("admin-bookings").innerText = "Failed to load bookings.";
+            return;
+        }
+        const bookings = await res.json();
+        if (bookings.length === 0) {
+            document.getElementById("admin-bookings").innerText = "No bookings found.";
+            return;
+        }
+        document.getElementById("admin-bookings").innerHTML = bookings.map(b => `
+            <div class="booking-entry">
+                <strong>${b.venue_name}</strong> - ${b.booking_time} - ${b.status}
+                <button onclick="performBookingAction('force_cancel', ${b.id})">Force Cancel</button>
+            </div>
+        `).join("");
+    } catch (err) {
+        console.error(err);
+        document.getElementById("admin-bookings").innerText = "Error loading bookings.";
+    }
+}
+loadAdminBookings();
+</script>

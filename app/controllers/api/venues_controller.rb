@@ -1,6 +1,19 @@
 module Api
   class VenuesController < BaseController
+    skip_before_action :authorize_request, only: [ :browse, :bookings ]
     before_action :require_tenant_admin!, only: [ :create, :update, :destroy ]
+
+    # Public browse — no tenant scoping, all active venues
+    def browse
+      venues = Venue.where(is_active: true)
+      if params[:q].present?
+        q = "%#{sanitize_sql_like(params[:q].to_s.strip)}%"
+        venues = venues.where("name LIKE :q OR location LIKE :q OR description LIKE :q", q: q)
+      end
+      venues = venues.offset(params[:skip].to_i)
+                     .limit([ params.fetch(:limit, 20).to_i, 100 ].min)
+      render json: venues.map { |v| venue_response(v) }
+    end
 
     def search
       query = params[:q].to_s.strip
@@ -70,6 +83,33 @@ module Api
 
       venue.update!(is_active: false)
       render json: { success: true, message: "Venue deleted" }
+    rescue ActiveRecord::RecordNotFound
+      render json: { error: "Venue not found" }, status: :not_found
+    end
+
+    # Public endpoint: view all bookings for a venue (calendar view)
+    def bookings
+      venue = Venue.where(is_active: true).find(params[:id])
+      bookings = venue.bookings
+                      .where(status: [ :pending, :confirmed ])
+                      .where("end_time > ?", Time.current - 30.days)
+                      .includes(:venue, :user, :equipment_list)
+                      .order(start_time: :asc)
+                      .limit(200)
+
+      render json: bookings.map { |b|
+        {
+          id: b.id,
+          title: b.title,
+          start_time: b.start_time,
+          end_time: b.end_time,
+          status: b.status,
+          venue_name: b.venue&.name,
+          user_name: b.user&.username,
+          equipment_names: b.equipment_list.map(&:name),
+          remarks: b.description
+        }
+      }
     rescue ActiveRecord::RecordNotFound
       render json: { error: "Venue not found" }, status: :not_found
     end

@@ -1,0 +1,108 @@
+<h1>Admin Panel</h1>
+
+<a href="/admin_users" class="dash-card admin-card">
+      <div class="card-icon" style="background:linear-gradient(135deg,#8e2d2d,#ca4d4d)">
+        <i class="bi bi-shield-lock"></i>
+      </div>
+      <div>
+        <h3>Admin Users</h3>
+        <p>Manage users</p>
+      </div>
+    </a>
+<a href="/admin_bookings" class="dash-card admin-card">
+      <div class="card-icon" style="background:linear-gradient(135deg,#8e2d2d,#ca4d4d)">
+        <i class="bi bi-shield-lock"></i>
+      </div>
+      <div>
+        <h3>Admin Bookings</h3>
+        <p>Manage bookings</p>
+      </div>
+    </a>
+<div id="admin-users">Loading users...</div>
+<a href="/menu" class="dash-card">
+      <div class="card-icon" style="background:linear-gradient(135deg,#2d6a8e,#4d9eca)">
+        <i class="bi bi-house"></i>
+      </div>
+      <div>
+        <h3>Back to Menu</h3>
+        <p>Return to main dashboard</p>
+      </div>
+    </a>
+
+
+
+<script>
+async function performAction(action, userId) {
+    const token = localStorage.getItem("token");
+    // Change: Use standard Rails URL pattern if your routes are resources
+    const url = `/api/admin/${userId}/${action.split('_')[0]}`; 
+    
+    if (!confirm(`Are you sure?`)) return;
+
+    try {
+        const res = await fetch(`/api/admin/${action}?id=${userId}`, {
+            method: action === 'delete_user' ? 'DELETE' : 'POST',
+            headers: { 
+                "Authorization": "Bearer " + token,
+                "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]')?.content 
+            }
+        });
+
+        if (res.ok) {
+            alert("Success!");
+            loadAdminUsers();
+        } else {
+            const err = await res.json();
+            alert("Error: " + err.error);
+        }
+    } catch (err) {
+        alert("Network error.");
+    }
+}
+
+async function loadAdminUsers() {
+    const token = localStorage.getItem("access_token");
+    
+    if (!token) {
+        document.getElementById("admin-users").innerHTML = 
+            '<b style="color:red">Error: No login token found. Please log in first.</b>';
+        return;
+    }
+
+    try {
+        const res = await fetch("/api/admin/users", {
+            headers: { "Authorization": "Bearer " + token }
+        });
+
+        if (res.status === 403) {
+            document.getElementById("admin-users").innerText = "Unauthorized: Invalid Token.";
+            return;
+        }
+
+        if (!res.ok) {
+            document.getElementById("admin-users").innerText = `Error ${res.status}: Failed to load.`;
+            return;
+        }
+
+        const users = await res.json();
+        if (users.length === 0) {
+            document.getElementById("admin-users").innerText = "No users found.";
+            return;
+        }
+
+        const userList = users.map(u => `
+            <li class="user-row">
+                ${u.username} (${u.email}) - <strong>${u.role}</strong>
+                <button onclick="performAction('suspend_user', ${u.id})">Suspend</button>
+                <button onclick="performAction('delete_user', ${u.id})" style="color:red">Delete</button>
+            </li>
+        `).join("");
+
+        document.getElementById("admin-users").innerHTML = `<ul>${userList}</ul>`;
+    } catch (e) {
+        document.getElementById("admin-users").innerText = "Connection refused. Is the server running?";
+    }
+}
+
+loadAdminUsers();
+</script>
