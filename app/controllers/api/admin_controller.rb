@@ -17,6 +17,10 @@ module Api
 
     def suspend_user
       user = User.find(params[:id])
+      # Tenant admins can only manage users in their own tenant
+      if @current_user.tenant_admin? && user.tenant_id != @current_user.tenant_id
+        return render json: { error: "Access denied" }, status: :forbidden
+      end
       UserService.suspend_user(user: user)
       render json: user_response(user)
     rescue ActiveRecord::RecordNotFound
@@ -25,6 +29,10 @@ module Api
 
     def delete_user
       user = User.find(params[:id])
+      # Tenant admins can only manage users in their own tenant
+      if @current_user.tenant_admin? && user.tenant_id != @current_user.tenant_id
+        return render json: { error: "Access denied" }, status: :forbidden
+      end
       user.update!(is_active: false)
       render json: { success: true, message: "User deleted" }
     rescue ActiveRecord::RecordNotFound

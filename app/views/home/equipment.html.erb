@@ -32,7 +32,6 @@
           <option value="in_use" data-i18n="in_use">In Use</option>
           <option value="maintenance" data-i18n="maintenance">Maintenance</option>
         </select>
-        <button class="btn-apply-filter" id="apply-filter-btn"><i class="bi bi-funnel"></i> <span data-i18n="apply_filters">Apply Filters</span></button>
         <span id="result-count" class="result-count"></span>
       </div>
     </div>
@@ -143,8 +142,6 @@ document.addEventListener("turbo:load", () => {
   const filterStatus = document.getElementById("filter-status");
   const resultCount = document.getElementById("result-count");
   const loadMoreWrap = document.getElementById("load-more-wrap");
-  const loadMoreBtn = document.getElementById("load-more-btn");
-  const applyBtn = document.getElementById("apply-filter-btn");
   const authHeaders = token ? { "Authorization": "Bearer " + token, "Accept": "application/json" } : { "Accept": "application/json" };
 
   // Initialize flatpickr date pickers
@@ -238,7 +235,6 @@ document.addEventListener("turbo:load", () => {
     dropdown.classList.remove("show"); fetchEquipment();
   });
 
-  applyBtn.addEventListener("click", applyClientFilters);
   filterType.addEventListener("change", applyClientFilters);
   filterStatus.addEventListener("change", applyClientFilters);
 
