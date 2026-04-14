@@ -14,12 +14,15 @@ module Api
       bookings = if @current_user.admin?
                    Booking.all
       elsif @current_user.tenant_admin?
+                   # Tenant admin sees ALL bookings from their tenant's venues and equipment
                    tenant_venue_ids = Venue.where(tenant_id: @current_user.tenant_id).pluck(:id)
                    tenant_equip_ids = Equipment.where(tenant_id: @current_user.tenant_id).pluck(:id)
                    booking_ids_from_equip = EquipmentBooking.where(equipment_id: tenant_equip_ids).pluck(:booking_id)
+                   # Get all users in the same tenant to show their bookings too
+                   tenant_user_ids = User.where(tenant_id: @current_user.tenant_id).pluck(:id)
                    Booking.where(venue_id: tenant_venue_ids)
                           .or(Booking.where(id: booking_ids_from_equip))
-                          .or(Booking.where(user_id: @current_user.id))
+                          .or(Booking.where(user_id: tenant_user_ids))
       else
                    @current_user.bookings
       end
@@ -33,7 +36,7 @@ module Api
     def show
       booking = Booking.includes(:venue, :user, :equipment_list).find(params[:id])
 
-      unless booking.user_id == @current_user.id || @current_user.admin?
+      unless booking.user_id == @current_user.id || @current_user.admin? || @current_user.tenant_admin?
         return render json: { error: "Access denied" }, status: :forbidden
       end
 
@@ -45,7 +48,7 @@ module Api
     def cancel
       booking = Booking.find(params[:id])
 
-      unless booking.user_id == @current_user.id || @current_user.admin?
+      unless booking.user_id == @current_user.id || @current_user.admin? || @current_user.tenant_admin?
         return render json: { error: "Access denied" }, status: :forbidden
       end
 
