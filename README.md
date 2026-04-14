@@ -151,15 +151,15 @@ open coverage/index.html
 ## Feature Ownership
 | Feature | Primary Developer | Secondary Developer | Notes |
 |---------|-------------------|---------------------|-------|
-| User Auth and Roles | | | Uses JWT token and bcrypt|
-| Venue/Equipment registration | | | |
-| Venue Calendar | | | Uses FullCalendar API |
-| conflict detection logic | | | check and reject immediately if time clashes during registration |
-| Avoid cross-tenant complexity | | | Tenent-scoped venues/equipment in database |
-| Cancellation and Point deduction system | | | |
-| optimistic locking | | | Each bookings is pending and waiting for admin to confirm |
-| Registration Data Analytics | | | Interactive Dashboards |
-| Search Engine and filter |  | | Uses Fuzzy Search | 
-| Google Maps |  | | Uses GoogleMap API |
-| Email notification | | | | 
-| AI assistant| | | Uses Gemini API |
+| User Auth and Roles | Zhiyu Wang, Hung Hei Chit |  Pang Enoch, Cheung Ka Tsun | Uses JWT token and bcrypt |
+| Venue Calendar |  Zhiyu Wang | x | Uses FullCalendar API |
+| conflict detection logic | Zhiyu Wang, Hung Hei Chit | x | check and reject immediately if time clashes during registration |
+| Avoid cross-tenant complexity | Zhiyu Wang, Hung Hei Chit  | x | Tenant-scoped venues/equipment in database |
+| Cancellation and Point deduction system | Zhiyu Wang, Hung Hei Chit | x |  |
+| optimistic locking | Zhiyu Wang | Hung Hei Chit | Each bookings is pending and waiting for admin to confirm |
+| Background jobs | Cheung Ka Tsun | x | Run on ActiveJob and ActionCable |
+| Registration Data Analytics | Geyu Liu  | x | Interactive Dashboards |
+| Search Engine and filter | Zhiyu Wang | Cheung Ka Tsun | Uses Fuzzy Search | 
+| Google Maps | Geyu Liu | x | Uses GoogleMap API |
+| Email notification | Cheung Ka Tsun | x | Uses Action Mailer with Resend SMTP | 
+| AI assistant | Cheung Ka Tsun | x | Uses Gemini API |
