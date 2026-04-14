@@ -159,6 +159,6 @@ open coverage/index.html
 | Background jobs | Cheung Ka Tsun | x | Run on ActiveJob and ActionCable |
 | Registration Data Analytics | Geyu Liu  | x | Interactive Dashboards |
 | Search Engine and filter | Zhiyu Wang | Cheung Ka Tsun | Uses Fuzzy Search | 
-| Google Maps | Geyu Liu | x | Uses GoogleMap API |
-| Email notification | Cheung Ka Tsun | x | Uses Action Mailer with Resend SMTP | 
-| AI assistant | Cheung Ka Tsun | x | Uses Gemini API |
+| Google Maps | Geyu Liu | Zhiyu Wang | Uses GoogleMap API |
+| Email notification | Cheung Ka Tsun | Zhiyu Wang | Uses Action Mailer with Resend SMTP | 
+| AI assistant | Cheung Ka Tsun | Zhiyu Wang | Uses Gemini API |
