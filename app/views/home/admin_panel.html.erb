@@ -111,8 +111,8 @@ document.addEventListener("turbo:load", () => {
       .then(r => r.json())
       .then(data => {
         document.getElementById('admin-bookings-content').innerHTML = data.length ?
-          '<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>ID</th><th>'+t('lbl_title')+'</th><th>'+t('lbl_venue')+'</th><th>'+t('lbl_status')+'</th><th>'+t('lbl_time')+'</th><th>'+t('lbl_action')+'</th></tr></thead><tbody>'+
-          data.map(b=>'<tr><td>'+b.id+'</td><td>'+esc(b.title)+'</td><td>'+esc(b.venue?.name||'-')+'</td><td><span class="admin-status-badge" style="background:'+statusColor(b.status)+'">'+esc(b.status)+'</span></td><td>'+fmtDate(b.start_time)+'</td><td>'+bookingActions(b)+'</td></tr>').join('')+
+          '<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>ID</th><th>'+t('lbl_title')+'</th><th>'+t('lbl_venue')+' / '+t('lbl_equipment')+'</th><th>'+t('lbl_status')+'</th><th>'+t('lbl_time')+'</th><th>'+t('lbl_action')+'</th></tr></thead><tbody>'+
+          data.map(b=>'<tr><td>'+b.id+'</td><td>'+esc(b.title)+'</td><td>'+esc(b.venue?.name||(b.equipment_list&&b.equipment_list.length?b.equipment_list.map(e=>e.name).join(', '):'-'))+'</td><td><span class="admin-status-badge" style="background:'+statusColor(b.status)+'">'+esc(b.status)+'</span></td><td>'+fmtDate(b.start_time)+' ~ '+fmtDate(b.end_time)+'</td><td>'+bookingActions(b)+'</td></tr>').join('')+
           '</tbody></table></div>' : '<span class="text-muted">'+t('no_data')+'</span>';
       }).catch(() => { document.getElementById('admin-bookings-content').innerHTML = '<span class="text-danger">'+t('load_fail')+'</span>'; });
   }
@@ -156,7 +156,7 @@ document.addEventListener("turbo:load", () => {
   function fmtDate(dt) {
     if (!dt) return "-";
     const d = new Date(dt);
-    return d.getFullYear()+"-"+(d.getMonth()+1).toString().padStart(2,'0')+"-"+d.getDate().toString().padStart(2,'0');
+    return d.getFullYear()+"-"+(d.getMonth()+1).toString().padStart(2,'0')+"-"+d.getDate().toString().padStart(2,'0')+" "+d.getHours().toString().padStart(2,'0')+":"+d.getMinutes().toString().padStart(2,'0');
   }
 
   showAdminTab('users', document.querySelector('.admin-tab-btn:first-child'));
