@@ -1,0 +1,144 @@
+<div class="dashboard-page">
+  <nav class="dashboard-nav">
+    <a href="/menu" class="brand" style="text-decoration:none;color:#fff">
+      <i class="bi bi-building"></i> <span data-i18n="brand">CUHK Venue Booking</span>
+    </a>
+    <div class="user-info">
+      <span id="user-greeting"></span>
+      <button class="btn-logout" onclick="toggleLang()" style="font-weight:600;">EN</button>
+      <a href="/menu" class="btn-logout"><i class="bi bi-grid"></i> <span data-i18n="menu">Menu</span></a>
+      <button class="btn-logout" id="logout-btn"><i class="bi bi-box-arrow-right"></i> <span data-i18n="logout">Logout</span></button>
+    </div>
+  </nav>
+
+  <div class="page-container">
+    <div class="page-header">
+      <h1><i class="bi bi-calendar-check"></i> <span data-i18n="my_bookings">My Bookings</span></h1>
+      <p data-i18n="my_bookings_sub">View and manage all your venue and equipment bookings</p>
+    </div>
+
+    <div id="booking-list" class="venues-grid"></div>
+    <div id="booking-empty" class="empty-state-box" style="display:none;">
+      <i class="bi bi-inbox"></i>
+      <p data-i18n="no_bookings">No bookings yet.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Overlay -->
+<div id="bookingOverlay" onclick="this.style.display='none'" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;background:rgba(0,0,0,0.5);">
+  <div onclick="event.stopPropagation()" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:92%;max-width:680px;max-height:85vh;background:#fff;border-radius:18px;box-shadow:0 12px 48px rgba(0,0,0,0.25);overflow-y:auto;">
+    <div style="position:sticky;top:0;background:#fff;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:18px 24px 14px;border-bottom:1px solid #eee;">
+      <h4 style="font-weight:700;margin:0;font-size:1.3rem;color:#2d1b4e;"><i class="bi bi-info-circle-fill me-2" style="color:#7b2d8e;"></i><span data-i18n="booking_detail">Booking Details</span></h4>
+      <button onclick="document.getElementById('bookingOverlay').style.display='none'" style="width:40px;height:40px;border-radius:50%;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;" onmouseover="this.style.background='#fee2e2';this.style.color='#dc2626';this.style.borderColor='#fca5a5'" onmouseout="this.style.background='#f3f4f6';this.style.color='#374151';this.style.borderColor='#d1d5db'"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div id="booking-detail-content" style="padding:20px 24px 24px;"></div>
+    <div id="booking-detail-footer" style="padding:0 24px 20px;display:flex;justify-content:flex-end;gap:10px;">
+      <button id="cancel-booking-btn" class="btn-load-more" style="display:none;background:linear-gradient(135deg,#dc2626,#b91c1c);" data-i18n="cancel_booking">Cancel Booking</button>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("turbo:load", () => {
+  if (!document.getElementById("booking-list")) return;
+  const token = localStorage.getItem("access_token");
+  const list = document.getElementById("booking-list");
+  const empty = document.getElementById("booking-empty");
+  let bookings = [];
+
+  if (token) {
+    fetch("/api/auth/me", { headers: { Authorization: "Bearer " + token } })
+      .then(r => { if (!r.ok) throw 0; return r.json(); })
+      .then(u => { document.getElementById("user-greeting").textContent = t('hi') + (u.full_name || u.username); })
+      .catch(() => {});
+  }
+  document.getElementById("logout-btn").onclick = () => {
+    localStorage.removeItem("access_token"); localStorage.removeItem("refresh_token");
+    window.location.href = "/";
+  };
+
+  function fetchBookings() {
+    fetch("/api/bookings", { headers: { Authorization: "Bearer " + token } })
+      .then(r => r.json())
+      .then(data => { bookings = data; renderBookings(); })
+      .catch(() => { list.innerHTML = '<p class="text-center text-muted">' + t('load_fail') + '</p>'; });
+  }
+
+  function statusColor(s) {
+    return { confirmed:'#198754', pending:'#e67e22', cancelled:'#dc3545', rejected:'#6f42c1', completed:'#0d6efd', no_show:'#6c757d' }[s] || '#6c757d';
+  }
+
+  function renderBookings() {
+    if (!bookings.length) { list.innerHTML = ""; empty.style.display = "flex"; return; }
+    empty.style.display = "none";
+    list.innerHTML = bookings.map(b => `
+      <div class="venue-card" onclick="showBookingDetail(${b.id})" style="cursor:pointer">
+        <div class="venue-card-header">
+          <h3>${esc(b.title)}</h3>
+          <span style="font-size:.78rem;font-weight:600;color:#fff;background:${statusColor(b.status)};padding:0.2rem 0.7rem;border-radius:6px;">${esc(b.status)}</span>
+        </div>
+        <p class="venue-location"><i class="bi bi-geo-alt"></i> ${esc(b.venue?.name || '-')}</p>
+        <p class="venue-location"><i class="bi bi-clock"></i> ${formatDate(b.start_time)} ~ ${formatDate(b.end_time)}</p>
+        <div class="venue-features">
+          ${(b.equipment_list||[]).map(e => '<span class="venue-feat"><i class="bi bi-box-seam"></i> '+esc(e.name)+'</span>').join('')}
+        </div>
+      </div>
+    `).join("");
+  }
+
+  window.showBookingDetail = function(id) {
+    const b = bookings.find(x => x.id == id);
+    if (!b) return;
+    document.getElementById("booking-detail-content").innerHTML = `<div class="detail-grid">
+      <div class="detail-item">
+        <div class="detail-icon" style="background:#f0e6ff;color:#7b2d8e"><i class="bi bi-bookmark-fill"></i></div>
+        <div><div class="detail-label">${t('lbl_title')}</div><div class="detail-value">${esc(b.title)}</div></div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-icon" style="background:#e8f4fd;color:#0d6efd"><i class="bi bi-geo-alt-fill"></i></div>
+        <div><div class="detail-label">${t('lbl_venue')}</div><div class="detail-value">${esc(b.venue?.name || '-')}</div></div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-icon" style="background:#e6f7ee;color:#198754"><i class="bi bi-stack"></i></div>
+        <div><div class="detail-label">${t('lbl_equipment')}</div><div class="detail-value">${esc((b.equipment_list||[]).map(e=>e.name).join(', ') || '-')}</div></div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-icon" style="background:${statusColor(b.status)}22;color:${statusColor(b.status)}"><i class="bi bi-reception-4"></i></div>
+        <div><div class="detail-label">${t('lbl_status')}</div><div class="detail-value">${esc(b.status)}</div></div>
+      </div>
+      <div class="detail-item detail-item-wide">
+        <div class="detail-icon" style="background:#fff3e0;color:#e67e22"><i class="bi bi-clock-fill"></i></div>
+        <div><div class="detail-label">${t('lbl_time')}</div><div class="detail-value">${formatDate(b.start_time)} ~ ${formatDate(b.end_time)}</div></div>
+      </div>
+      <div class="detail-item detail-item-wide">
+        <div class="detail-icon" style="background:#f8f9fa;color:#555"><i class="bi bi-chat-left-text-fill"></i></div>
+        <div><div class="detail-label">${t('lbl_remarks_label')}</div><div class="detail-value">${esc(b.description || '-')}</div></div>
+      </div>
+    </div>`;
+    const cancelBtn = document.getElementById("cancel-booking-btn");
+    if (b.status === "pending" || b.status === "confirmed") {
+      cancelBtn.style.display = "inline-block";
+      cancelBtn.onclick = () => cancelBooking(b.id);
+    } else { cancelBtn.style.display = "none"; }
+    document.getElementById("bookingOverlay").style.display = "block";
+  };
+
+  function cancelBooking(id) {
+    if (!confirm(t('confirm_cancel'))) return;
+    fetch(`/api/bookings/${id}/cancel`, { method:"POST", headers:{ Authorization:"Bearer "+token } })
+      .then(r=>r.json())
+      .then(() => { document.getElementById("bookingOverlay").style.display="none"; fetchBookings(); })
+      .catch(() => alert(t('cancel_fail')));
+  }
+
+  function esc(s) { return String(s||"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
+  function formatDate(dt) {
+    if (!dt) return "-";
+    const d = new Date(dt);
+    return d.getFullYear()+"-"+(d.getMonth()+1).toString().padStart(2,'0')+"-"+d.getDate().toString().padStart(2,'0')+" "+d.getHours().toString().padStart(2,'0')+":"+d.getMinutes().toString().padStart(2,'0');
+  }
+  document.addEventListener("langchange", () => { renderBookings(); });
+  fetchBookings();
+});
+</script>

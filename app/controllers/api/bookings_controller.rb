@@ -11,11 +11,22 @@ module Api
     end
 
     def index
-      bookings = @current_user.bookings
-                              .includes(:venue, :user, :equipment_list)
-                              .order(created_at: :desc)
-                              .offset(params[:skip].to_i)
-                              .limit([ params.fetch(:limit, 10).to_i, 100 ].min)
+      bookings = if @current_user.admin?
+                   Booking.all
+      elsif @current_user.tenant_admin?
+                   tenant_venue_ids = Venue.where(tenant_id: @current_user.tenant_id).pluck(:id)
+                   tenant_equip_ids = Equipment.where(tenant_id: @current_user.tenant_id).pluck(:id)
+                   booking_ids_from_equip = EquipmentBooking.where(equipment_id: tenant_equip_ids).pluck(:booking_id)
+                   Booking.where(venue_id: tenant_venue_ids)
+                          .or(Booking.where(id: booking_ids_from_equip))
+                          .or(Booking.where(user_id: @current_user.id))
+      else
+                   @current_user.bookings
+      end
+      bookings = bookings.includes(:venue, :user, :equipment_list)
+                         .order(created_at: :desc)
+                         .offset(params[:skip].to_i)
+                         .limit([ params.fetch(:limit, 10).to_i, 100 ].min)
       render json: bookings.map { |b| booking_detail_response(b) }
     end
 
@@ -74,6 +85,25 @@ module Api
       BookingService.broadcast_booking_event(booking, "booking_confirmed")
 
       render json: { success: true, message: "Booking confirmed", booking: booking_response(booking) }
+    rescue ActiveRecord::RecordNotFound
+      render json: { error: "Booking not found" }, status: :not_found
+    end
+
+    def reject
+      unless @current_user.admin? || @current_user.tenant_admin?
+        return render json: { error: "Only admins can reject bookings" }, status: :forbidden
+      end
+
+      booking = Booking.find(params[:id])
+
+      unless booking.pending?
+        return render json: { error: "Only pending bookings can be rejected" }, status: :bad_request
+      end
+
+      booking.update!(status: :rejected)
+      BookingService.broadcast_booking_event(booking, "booking_rejected")
+
+      render json: { success: true, message: "Booking rejected", booking: booking_response(booking) }
     rescue ActiveRecord::RecordNotFound
       render json: { error: "Booking not found" }, status: :not_found
     end
@@ -154,7 +184,7 @@ module Api
 
     def booking_detail_response(booking)
       booking_response(booking).merge(
-        venue: venue_response(booking.venue),
+        venue: booking.venue ? venue_response(booking.venue) : nil,
         user: { id: booking.user.id, email: booking.user.email, username: booking.user.username },
         equipment_list: booking.equipment_list.map { |e| equipment_response(e) }
       )

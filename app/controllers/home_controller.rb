@@ -11,6 +11,24 @@ class HomeController < ApplicationController
   def admin_users
   end
 
+  def catalog
+  end
+
+  def equipment
+  end
+
+  def user_bookings
+  end
+
+  def venue_bookings
+  end
+
+  def admin_panel
+  end
+
   def analytics
+  end
+
+  def profile
   end
 end

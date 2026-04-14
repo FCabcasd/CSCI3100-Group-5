@@ -1,7 +1,11 @@
 <div class="auth-page">
   <div class="auth-brand">
-    <h1><i class="bi bi-building"></i> CUHK Venue Booking</h1>
-    <p>Book venues &amp; equipment across departments</p>
+    <h1><i class="bi bi-building"></i> <span data-i18n="brand">CUHK Venue Booking</span></h1>
+    <p data-i18n="brand_sub">Book venues &amp; equipment across departments</p>
+  </div>
+
+  <div class="lang-switch-row" style="text-align:center;margin-bottom:12px;">
+    <button id="lang-toggle-btn" onclick="toggleLang()" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.4);padding:5px 18px;border-radius:20px;font-size:0.85rem;font-weight:600;cursor:pointer;backdrop-filter:blur(6px);transition:all 0.3s;">中文</button>
   </div>
 
   <div id="auth-alert" class="auth-alert alert" role="alert">
@@ -11,24 +15,23 @@
 
   <div class="glass-card">
     <div class="auth-tabs">
-      <button class="auth-tab-btn active" data-tab="login">Sign In</button>
-      <button class="auth-tab-btn" data-tab="register">Create Account</button>
+      <button class="auth-tab-btn active" data-tab="login" data-i18n="tab_signin">Sign In</button>
+      <button class="auth-tab-btn" data-tab="register" data-i18n="tab_register">Create Account</button>
     </div>
 
     <div id="login-panel" class="auth-panel active">
       <form id="login-form" novalidate>
         <div class="input-group-icon">
           <i class="bi bi-envelope"></i>
-          <input type="email" id="login-email" placeholder="Email address" required autocomplete="email">
+          <input type="email" id="login-email" data-i18n-placeholder="ph_email" placeholder="Email address" required autocomplete="email">
         </div>
 
         <div class="input-group-icon">
           <i class="bi bi-lock"></i>
-          <input type="password" id="login-password" placeholder="Password" required autocomplete="current-password">
-          <button type="button" class="password-toggle" tabindex="-1"><i class="bi bi-eye"></i></button>
+          <input type="password" id="login-password" data-i18n-placeholder="ph_password" placeholder="Password" required autocomplete="current-password">
         </div>
 
-        <button type="submit" class="btn-auth btn-auth-primary" id="login-btn">
+        <button type="submit" class="btn-auth btn-auth-primary" id="login-btn" data-i18n="btn_signin">
           Sign In
         </button>
       </form>
@@ -38,23 +41,29 @@
       <form id="register-form" novalidate>
         <div class="input-group-icon">
           <i class="bi bi-person"></i>
-          <input type="text" id="reg-username" placeholder="Username" required minlength="2">
+          <input type="text" id="reg-username" data-i18n-placeholder="ph_username" placeholder="Username" required minlength="2">
         </div>
 
         <div class="input-group-icon">
           <i class="bi bi-person-badge"></i>
-          <input type="text" id="reg-fullname" placeholder="Full Name" required>
+          <input type="text" id="reg-fullname" data-i18n-placeholder="ph_fullname" placeholder="Full Name" required>
         </div>
 
         <div class="input-group-icon">
           <i class="bi bi-envelope"></i>
-          <input type="email" id="reg-email" placeholder="Email address" required autocomplete="email">
+          <input type="email" id="reg-email" data-i18n-placeholder="ph_email" placeholder="Email address" required autocomplete="email">
+        </div>
+
+        <div class="input-group-icon">
+          <i class="bi bi-building"></i>
+          <select id="reg-tenant" class="form-select-custom">
+            <option value="" data-i18n="ph_dept">-- Select Department (optional) --</option>
+          </select>
         </div>
 
         <div class="input-group-icon">
           <i class="bi bi-lock"></i>
-          <input type="password" id="reg-password" placeholder="Password (min 6 chars)" required minlength="6" autocomplete="new-password">
-          <button type="button" class="password-toggle" tabindex="-1"><i class="bi bi-eye"></i></button>
+          <input type="password" id="reg-password" data-i18n-placeholder="ph_password_min" placeholder="Password (min 6 chars)" required minlength="6" autocomplete="new-password">
         </div>
 
         <div class="password-strength" aria-hidden="true">
@@ -63,23 +72,25 @@
 
         <div class="input-group-icon">
           <i class="bi bi-lock-fill"></i>
-          <input type="password" id="reg-password-confirm" placeholder="Confirm Password" required minlength="6" autocomplete="new-password">
+          <input type="password" id="reg-password-confirm" data-i18n-placeholder="ph_confirm_pw" placeholder="Confirm Password" required minlength="6" autocomplete="new-password">
         </div>
 
-        <button type="submit" class="btn-auth btn-auth-primary" id="register-btn">
+        <button type="submit" class="btn-auth btn-auth-primary" id="register-btn" data-i18n="btn_register">
           Create Account
         </button>
       </form>
     </div>
   </div>
 
-  <div class="auth-footer">
+  <div class="auth-footer" data-i18n="footer">
     &copy; 2026 CUHK Venue &amp; Equipment Booking System
   </div>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("turbo:load", () => {
+  if (!document.getElementById("login-form")) return;
+  /* ---- Redirect if already logged in ---- */
   if (localStorage.getItem("access_token")) {
     window.location.href = "<%= menu_path %>";
     return;
@@ -92,13 +103,25 @@ document.addEventListener("DOMContentLoaded", () => {
   const panels = document.querySelectorAll(".auth-panel");
   const loginForm = document.getElementById("login-form");
   const registerForm = document.getElementById("register-form");
-  const loginBtn = document.getElementById("login-btn");
-  const registerBtn = document.getElementById("register-btn");
-  const strengthBar = document.getElementById("strength-bar");
+  const loginBtn     = document.getElementById("login-btn");
+  const registerBtn  = document.getElementById("register-btn");
+  const strengthBar   = document.getElementById("strength-bar");
+  const tenantSelect  = document.getElementById("reg-tenant");
+
+  /* ---- Load tenant list for registration ---- */
+  fetch("/api/tenants", { headers: { "Accept": "application/json" } })
+    .then(r => r.json())
+    .then(tenants => {
+      tenants.forEach(tn => {
+        const opt = document.createElement("option");
+        opt.value = tn.id; opt.textContent = tn.name;
+        tenantSelect.appendChild(opt);
+      });
+    }).catch(() => {});
 
   tabs.forEach(tab => {
     tab.addEventListener("click", () => {
-      tabs.forEach(t => t.classList.remove("active"));
+      tabs.forEach(tb => tb.classList.remove("active"));
       panels.forEach(p => p.classList.remove("active"));
       tab.classList.add("active");
       document.getElementById(tab.dataset.tab + "-panel").classList.add("active");
@@ -106,19 +129,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  document.querySelectorAll(".password-toggle").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const input = btn.previousElementSibling;
-      const icon = btn.querySelector("i");
-      if (input.type === "password") {
-        input.type = "text";
-        icon.classList.replace("bi-eye", "bi-eye-slash");
-      } else {
-        input.type = "password";
-        icon.classList.replace("bi-eye-slash", "bi-eye");
-      }
-    });
-  });
 
   document.getElementById("reg-password").addEventListener("input", (e) => {
     const val = e.target.value;
@@ -154,7 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (loading) {
       btn.disabled = true;
       btn.dataset.origText = btn.textContent;
-      btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Please wait...';
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> ' + t('login_wait');
     } else {
       btn.disabled = false;
       btn.textContent = btn.dataset.origText;
@@ -169,7 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const password = document.getElementById("login-password").value;
 
     if (!email || !password) {
-      showAlert("Please fill in all fields.", "danger");
+      showAlert(t('login_fill'), "danger");
       return;
     }
 
@@ -184,17 +194,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const data = await res.json().catch(() => null);
       if (!res.ok) throw new Error(parseError(data, res.status));
-      if (!data.access_token) throw new Error("Login succeeded but no token returned.");
+      if (!data.access_token) throw new Error(t('login_no_token'));
 
       localStorage.setItem("access_token", data.access_token);
       if (data.refresh_token) {
         localStorage.setItem("refresh_token", data.refresh_token);
       }
 
-      showAlert("Login successful! Redirecting...", "success");
+      showAlert(t('login_success'), "success");
       setTimeout(() => { window.location.href = "<%= menu_path %>"; }, 600);
     } catch (err) {
-      showAlert(err.message || "Login failed.", "danger");
+      showAlert(err.message || t('login_fail'), "danger");
       setLoading(loginBtn, false);
     }
   });
@@ -202,23 +212,23 @@ document.addEventListener("DOMContentLoaded", () => {
   registerForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     hideAlert();
-
-    const username = document.getElementById("reg-username").value.trim();
-    const fullName = document.getElementById("reg-fullname").value.trim();
-    const email = document.getElementById("reg-email").value.trim();
-    const password = document.getElementById("reg-password").value;
-    const confirm = document.getElementById("reg-password-confirm").value;
+    const username  = document.getElementById("reg-username").value.trim();
+    const fullName  = document.getElementById("reg-fullname").value.trim();
+    const email     = document.getElementById("reg-email").value.trim();
+    const tenantId  = document.getElementById("reg-tenant").value;
+    const password  = document.getElementById("reg-password").value;
+    const confirm   = document.getElementById("reg-password-confirm").value;
 
     if (!username || !fullName || !email || !password || !confirm) {
-      showAlert("Please fill in all fields.", "danger");
+      showAlert(t('reg_fill'), "danger");
       return;
     }
     if (password.length < 6) {
-      showAlert("Password must be at least 6 characters.", "danger");
+      showAlert(t('reg_pw_min'), "danger");
       return;
     }
     if (password !== confirm) {
-      showAlert("Passwords do not match.", "danger");
+      showAlert(t('reg_pw_mismatch'), "danger");
       return;
     }
 
@@ -228,20 +238,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const res = await fetch("<%= api_auth_register_path %>", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify({
-          username,
-          full_name: fullName,
-          email,
-          password,
-          password_confirmation: confirm
-        })
+        body: JSON.stringify({ username, full_name: fullName, email, password, password_confirmation: confirm, tenant_id: tenantId || null })
       });
 
       const data = await res.json().catch(() => null);
       if (!res.ok) throw new Error(parseError(data, res.status));
-      if (!data.id) throw new Error("Registration succeeded but response is missing user data.");
+      if (!data.id) throw new Error(t('reg_no_user'));
 
-      showAlert("Account created! Please sign in.", "success");
+      showAlert(t('reg_success'), "success");
       registerForm.reset();
       strengthBar.className = "password-strength-bar";
 
@@ -251,7 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("login-password").focus();
       }, 800);
     } catch (err) {
-      showAlert(err.message || "Registration failed.", "danger");
+      showAlert(err.message || t('reg_fail'), "danger");
     } finally {
       setLoading(registerBtn, false);
     }

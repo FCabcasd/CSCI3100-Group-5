@@ -16,6 +16,11 @@ module Api
         username: params[:username],
         full_name: params[:full_name]
       )
+      # Assign tenant if provided
+      if params[:tenant_id].present?
+        tenant = Tenant.find_by(id: params[:tenant_id])
+        user.tenant = tenant if tenant
+      end
       user.password = params[:password]
 
       if user.save
@@ -87,6 +92,7 @@ module Api
         full_name: user.full_name,
         role: user.role,
         tenant_id: user.tenant_id,
+        tenant_name: user.tenant&.name,
         is_active: user.is_active,
         points: user.points,
         created_at: user.created_at

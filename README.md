@@ -4,7 +4,7 @@ A multi-tenant venue and equipment booking system for CUHK student societies. Ea
 
 ## Live Demo
 
-**Walking Skeleton URL:** https://group5app-e244cbe44724.herokuapp.com/
+**Deployed URL:** https://cuhk-venue-booking-aeee75bcd129.herokuapp.com/
 
 ## Team Information (Group 5)
 
@@ -21,10 +21,11 @@ A multi-tenant venue and equipment booking system for CUHK student societies. Ea
 - **Backend:** Ruby on Rails 8.1 (API mode)
 - **Auth:** BCrypt + JWT (HS256)
 - **Database:** SQLite (dev/test), PostgreSQL (production)
-- **Background Jobs:** Solid Queue
-- **Real-Time:** ActionCable (Solid Cable)
-- **AI:** OpenAI GPT-3.5 Turbo
-- **Email:** Action Mailer with async delivery
+- **Background Jobs:** ActiveJob (async adapter)
+- **Real-Time:** ActionCable (WebSockets)
+- **AI:** Google Gemini (gemini-2.5-flash-lite)
+- **Email:** Action Mailer + Resend SMTP
+- **Maps:** Google Maps integration
 - **Security:** Rack::Attack (rate limiting), Rack::Cors
 - **Testing:** RSpec, Cucumber, SimpleCov, FactoryBot
 - **Deployment:** Docker + Heroku
@@ -104,9 +105,10 @@ bundle exec cucumber
 | Variable | Description | Required |
 |----------|-------------|----------|
 | `SECRET_KEY_BASE` | JWT signing secret | Yes (production) |
-| `OPENAI_API_KEY` | OpenAI API key for AI features | No (graceful degradation) |
+| `GEMINI_API_KEY` | Google Gemini API key for AI features | No (graceful degradation) |
+| `RESEND_API_KEY` | Resend API key for email delivery | No |
+| `SMTP_FROM` | Default email sender address | No |
 | `CORS_ORIGINS` | Allowed CORS origins (comma-separated) | No (defaults localhost) |
-| `MAILER_SENDER` | Default email sender address | No |
 | `DATABASE_URL` | PostgreSQL connection URL | Yes (production) |
 
 ## Testing
@@ -126,15 +128,15 @@ open coverage/index.html
 
 | Suite | Total | Passed | Failed | Status |
 |-------|-------|--------|--------|--------|
-| RSpec | 212 examples | 212 | 0 | ✅ All passed |
+| RSpec | 217 examples | 217 | 0 | ✅ All passed |
 | Cucumber | 23 scenarios (147 steps) | 23 | 0 | ✅ All passed |
 
 ### Coverage
 
 | Metric | Result | Target |
 |--------|--------|--------|
-| Line Coverage | **93.7%** (548/585) | >80% |
-| Branch Coverage | **82.4%** (136/165) | >65% |
+| Line Coverage | **82.16%** (617/751) | >80% |
+| Branch Coverage | **72.2%** (148/205) | >65% |
 
 ### Key Coverage Highlights
 
@@ -145,3 +147,15 @@ open coverage/index.html
 | Controllers | 86–100% |
 | Mailers | 100% |
 | Channels | 75–100% |
+
+## Feature Ownership
+| Feature | Primary Developer | Secondary Developer | Notes |
+|---------|-------------------|---------------------|-------|
+| User Auth and Roles | | | |
+| Venue/Equipment registration | | | |
+| conflict detection logic | | | |
+| Cancellation and Point deduction system | | | |
+| Search Engine and filter |  | | | 
+| Google Maps |  | | |
+| Email | | | | 
+| AI | | | |

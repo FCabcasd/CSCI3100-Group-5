@@ -5,7 +5,7 @@
 <h3>Cancelled Booking</h3>
 <ul>
   <li><strong>Title:</strong> <%= @booking.title %></li>
-  <li><strong>Venue:</strong> <%= @venue.name %></li>
+  <li><strong>Venue:</strong> <%= @venue_name %></li>
   <li><strong>Original Time:</strong> <%= @booking.start_time.strftime("%Y-%m-%d %H:%M") %> - <%= @booking.end_time.strftime("%Y-%m-%d %H:%M") %></li>
   <li><strong>Reason:</strong> <%= @cancellation.reason || "Not provided" %></li>
 </ul>

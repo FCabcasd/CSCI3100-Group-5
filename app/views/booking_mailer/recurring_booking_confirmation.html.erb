@@ -5,7 +5,7 @@
 <h3>Booking Summary</h3>
 <ul>
   <li><strong>Title:</strong> <%= @bookings.first.title %></li>
-  <li><strong>Venue:</strong> <%= @venue.name %></li>
+  <li><strong>Venue:</strong> <%= @venue_name %></li>
   <li><strong>Pattern:</strong> <%= @bookings.first.recurrence_pattern&.capitalize %></li>
   <li><strong>First Start:</strong> <%= @bookings.first.start_time.strftime("%Y-%m-%d %H:%M") %></li>
 </ul>

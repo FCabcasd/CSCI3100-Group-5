@@ -1,31 +1,22 @@
 <div class="dashboard-page">
   <nav class="dashboard-nav">
-    <span class="brand"><i class="bi bi-building"></i> CUHK Venue Booking</span>
+    <span class="brand"><i class="bi bi-building"></i> <span data-i18n="brand">CUHK Venue Booking</span></span>
     <div class="user-info">
       <span id="user-greeting"></span>
       <span class="badge bg-light text-dark" id="user-points"></span>
-      <button class="btn-logout" id="logout-btn"><i class="bi bi-box-arrow-right"></i> Logout</button>
+      <button class="btn-logout" id="lang-toggle-btn" onclick="toggleLang()" style="font-weight:600;">EN</button>
+      <button class="btn-logout" id="logout-btn"><i class="bi bi-box-arrow-right"></i> <span data-i18n="logout">Logout</span></button>
     </div>
   </nav>
 
   <div class="dashboard-grid" id="dashboard-grid">
-    <a href="/" class="dash-card">
-      <div class="card-icon" style="background:linear-gradient(135deg,#4b5563,#6b7280)">
-        <i class="bi bi-house"></i>
-      </div>
-      <div>
-        <h3>Home</h3>
-        <p>Return to the welcome page</p>
-      </div>
-    </a>
-
     <a href="/catalog" class="dash-card">
       <div class="card-icon" style="background:linear-gradient(135deg,#7b2d8e,#9b4dca)">
         <i class="bi bi-geo-alt"></i>
       </div>
       <div>
-        <h3>Browse Venues</h3>
-        <p>Search and explore available venues</p>
+        <h3 data-i18n="card_venues">Browse Venues</h3>
+        <p data-i18n="card_venues_desc">Search and explore available venues</p>
       </div>
     </a>
 
@@ -34,8 +25,8 @@
         <i class="bi bi-tools"></i>
       </div>
       <div>
-        <h3>Equipment</h3>
-        <p>View and book equipment</p>
+        <h3 data-i18n="card_equip">Equipment</h3>
+        <p data-i18n="card_equip_desc">View and book equipment</p>
       </div>
     </a>
 
@@ -44,8 +35,8 @@
         <i class="bi bi-calendar-check"></i>
       </div>
       <div>
-        <h3>My Bookings</h3>
-        <p>View, manage and check in</p>
+        <h3 data-i18n="card_bookings">My Bookings</h3>
+        <p data-i18n="card_bookings_desc">View, manage and check in</p>
       </div>
     </a>
 
@@ -54,8 +45,28 @@
         <i class="bi bi-calendar3"></i>
       </div>
       <div>
-        <h3>Venue Calendar</h3>
-        <p>See venue availability</p>
+        <h3 data-i18n="card_calendar">Venue Calendar</h3>
+        <p data-i18n="card_calendar_desc">See venue availability</p>
+      </div>
+    </a>
+
+    <a href="/ai_assistant" class="dash-card">
+      <div class="card-icon" style="background:linear-gradient(135deg,#f59e42,#f7c873)">
+        <i class="bi bi-robot"></i>
+      </div>
+      <div>
+        <h3 data-i18n="card_ai">AI Consultant</h3>
+        <p data-i18n="card_ai_desc">Smart Q&A and recommendations</p>
+      </div>
+    </a>
+
+    <a href="/profile" class="dash-card">
+      <div class="card-icon" style="background:linear-gradient(135deg,#6c757d,#adb5bd)">
+        <i class="bi bi-person-circle"></i>
+      </div>
+      <div>
+        <h3 data-i18n="card_profile">My Profile</h3>
+        <p data-i18n="card_profile_desc">View account info and points</p>
       </div>
     </a>
 
@@ -65,8 +76,8 @@
         <i class="bi bi-shield-lock"></i>
       </div>
       <div>
-        <h3>My Profile</h3>
-        <p>View your account details and points</p>
+        <h3 data-i18n="card_admin">Admin Center</h3>
+        <p data-i18n="card_admin_desc">Manage users and bookings</p>
       </div>
     </a>
 
@@ -75,25 +86,16 @@
         <i class="bi bi-bar-chart-line"></i>
       </div>
       <div>
-        <h3>Analytics</h3>
-        <p>Usage stats and reports</p>
-      </div>
-    </a>
-
-    <a href="/admin_users" class="dash-card admin-card" style="display:none">
-      <div class="card-icon" style="background:linear-gradient(135deg,#8e2d2d,#ca4d4d)">
-        <i class="bi bi-shield-lock"></i>
-      </div>
-      <div>
-        <h3>Admin Panel</h3>
-        <p>Manage users and bookings</p>
+        <h3 data-i18n="card_analytics">Analytics</h3>
+        <p data-i18n="card_analytics_desc">Usage stats and reports</p>
       </div>
     </a>
   </div>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("turbo:load", () => {
+  if (!document.getElementById("dashboard-grid")) return;
   const token = localStorage.getItem("access_token");
   if (!token) {
     window.location.href = "/";
@@ -107,21 +109,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   })
     .then(res => {
-      if (!res.ok) {
+      if (res.status === 401) {
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
         window.location.href = "/";
         return null;
       }
+      if (!res.ok) return null;
       return res.json();
     })
     .then(user => {
       if (!user) return;
 
       document.getElementById("user-greeting").textContent =
-        "Hi, " + (user.full_name || user.username);
+        t('hi') + (user.full_name || user.username);
       document.getElementById("user-points").innerHTML =
-        '<i class="bi bi-coin"></i> ' + user.points + " pts";
+        '<i class="bi bi-coin"></i> ' + user.points + " " + t('pts');
 
       if (user.role === "admin" || user.role === "tenant_admin") {
         document.querySelectorAll(".admin-card").forEach(card => {
@@ -129,10 +132,10 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     })
-    .catch(() => {
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
-      window.location.href = "/";
+    .catch((err) => {
+      console.error("Auth check failed:", err);
+      // Don't redirect on network errors - just show default state
+      document.getElementById("user-greeting").textContent = t('hi') + "User";
     });
 
   document.getElementById("logout-btn").addEventListener("click", () => {

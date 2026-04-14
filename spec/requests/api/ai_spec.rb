@@ -6,6 +6,12 @@ RSpec.describe "Api::Ai", type: :request do
   let(:token) { JsonWebToken.encode(sub: user.id) }
   let(:headers) { { "Authorization" => "Bearer #{token}" } }
 
+  before do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("GEMINI_API_KEY").and_return(nil)
+    allow(ENV).to receive(:fetch).and_call_original
+  end
+
   describe "GET /api/ai/status" do
     it "returns AI availability status" do
       get "/api/ai/status", headers: headers
