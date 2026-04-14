@@ -8,7 +8,7 @@ class HomeController < ApplicationController
     end
   end
 
-  def admin_users    
+  def admin_users
   end
 
   def analytics
