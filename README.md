@@ -136,7 +136,6 @@ open coverage/index.html
 | Metric | Result | Target |
 |--------|--------|--------|
 | Line Coverage | **82.16%** (617/751) | >80% |
-| Branch Coverage | **72.2%** (148/205) | >65% |
 
 ### Key Coverage Highlights
 
