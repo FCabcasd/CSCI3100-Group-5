@@ -128,24 +128,27 @@ open coverage/index.html
 
 | Suite | Total | Passed | Failed | Status |
 |-------|-------|--------|--------|--------|
-| RSpec | 217 examples | 217 | 0 | ✅ All passed |
+| RSpec | 234 examples | 234 | 0 | ✅ All passed |
 | Cucumber | 23 scenarios (147 steps) | 23 | 0 | ✅ All passed |
 
-### Coverage
+### Coverage (SimpleCov)
 
-| Metric | Result | Target |
-|--------|--------|--------|
-| Line Coverage | **82.16%** (617/751) | >80% |
+| Metric | Result | Target | Status |
+|--------|--------|--------|--------|
+| Line Coverage | **88.83%** (668/752) | >80% | ✅ Exceeded |
 
-### Key Coverage Highlights
+### Coverage by Layer
 
-| Layer | Coverage |
-|-------|----------|
-| Models (all) | 100% |
-| Services (all) | 100% |
-| Controllers | 86–100% |
-| Mailers | 100% |
-| Channels | 75–100% |
+| Layer | Line Coverage | Details |
+|-------|-------------|---------|
+| Models | **100%** (61/61) | All models fully tested |
+| Services | **94.6%** (211/223) | Booking, Conflict Detection, JWT, etc. |
+| Controllers | **83.3%** (340/408) | Auth 92.9%, Analytics 100%, Admin 83.3% |
+| Mailers | **97.4%** (37/38) | Booking notifications fully tested |
+| Channels | **94.4%** (17/18) | WebSocket connection & broadcast |
+
+
+
 
 ## Feature Ownership
 | Feature | Primary Developer | Secondary Developer | Notes |

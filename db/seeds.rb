@@ -370,8 +370,8 @@ rrs_hall = Venue.find_or_create_by!(tenant: osa, name: "Sir Run Run Shaw Hall") 
   v.description = "Main university auditorium for concerts, ceremonies, and large events"
   v.capacity = 1438
   v.location = "Sir Run Run Shaw Hall, Central Campus, CUHK"
-  v.latitude = 22.41920
-  v.longitude = 114.20530
+  v.latitude = 22.420348172393982
+  v.longitude = 114.20714322341328
   v.features = { "stage" => true, "sound_system" => true, "lighting" => true, "projector" => true, "microphone" => true, "backstage" => true, "air_conditioning" => true }
   v.available_from = "08:00"
   v.available_until = "23:00"
@@ -382,8 +382,8 @@ ch_multi = Venue.find_or_create_by!(tenant: osa, name: "Benjamin Franklin Centre
   v.description = "Multi-purpose court for sports events, exhibitions, and assemblies"
   v.capacity = 500
   v.location = "Benjamin Franklin Centre, Multi-Purpose Court, CUHK"
-  v.latitude = 22.42145
-  v.longitude = 114.20585
+  v.latitude = 22.418346005491934
+  v.longitude = 114.20534988477905
   v.features = { "court" => true, "sound_system" => true, "wifi" => true, "projector" => true, "portable_stage" => true }
   v.available_from = "07:00"
   v.available_until = "22:30"
@@ -394,8 +394,8 @@ pomm_room = Venue.find_or_create_by!(tenant: osa, name: "Pommerenke Student Cent
   v.description = "Student society meeting room with round-table setup"
   v.capacity = 30
   v.location = "Pommerenke Student Centre, 2/F, Room 201, CUHK"
-  v.latitude = 22.42180
-  v.longitude = 114.20625
+  v.latitude = 22.417238586852275
+  v.longitude = 114.20886685409607
   v.features = { "round_tables" => true, "wifi" => true, "whiteboard" => true, "air_conditioning" => true }
   v.available_from = "09:00"
   v.available_until = "22:00"
@@ -479,8 +479,8 @@ lsk_study = Venue.find_or_create_by!(tenant: lib, name: "Li Ping Medical Library
   v.description = "Quiet study room in Li Ping Medical Library"
   v.capacity = 6
   v.location = "Li Ping Medical Library, 1/F, Study Room, CUHK"
-  v.latitude = 22.42820
-  v.longitude = 114.20250
+  v.latitude = 22.379386840677046
+  v.longitude = 114.20097845409543
   v.features = { "wifi" => true, "air_conditioning" => true, "power_outlets" => true, "quiet_zone" => true }
   v.available_from = "09:00"
   v.available_until = "20:00"
