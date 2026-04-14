@@ -34,11 +34,13 @@ class ConflictDetectionService
   end
 
   def self.validate_booking_times(venue_id:, equipment_ids:, start_time:, end_time:, exclude_booking_id: nil)
-    available, msg = check_venue_availability(
-      venue_id: venue_id, start_time: start_time, end_time: end_time,
-      exclude_booking_id: exclude_booking_id
-    )
-    return [ false, msg ] unless available
+    if venue_id.present?
+      available, msg = check_venue_availability(
+        venue_id: venue_id, start_time: start_time, end_time: end_time,
+        exclude_booking_id: exclude_booking_id
+      )
+      return [ false, msg ] unless available
+    end
 
     (equipment_ids || []).each do |eq_id|
       available, msg = check_equipment_availability(
