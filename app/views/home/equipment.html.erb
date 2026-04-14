@@ -142,10 +142,11 @@ document.addEventListener("turbo:load", () => {
   const filterStatus = document.getElementById("filter-status");
   const resultCount = document.getElementById("result-count");
   const loadMoreWrap = document.getElementById("load-more-wrap");
+  const loadMoreBtn = document.getElementById("load-more-btn");
   const authHeaders = token ? { "Authorization": "Bearer " + token, "Accept": "application/json" } : { "Accept": "application/json" };
 
   // Initialize flatpickr date pickers
-  const fpOpts = { enableTime: true, dateFormat: "Y-m-d H:i", time_24hr: true, locale: "en" };
+  const fpOpts = { enableTime: true, dateFormat: "Y-m-d H:i", time_24hr: true, locale: "en", minDate: new Date() };
   flatpickr("#ebook-start", fpOpts);
   flatpickr("#ebook-end", fpOpts);
 

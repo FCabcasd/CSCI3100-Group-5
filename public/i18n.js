@@ -131,6 +131,12 @@
       book_venue_success: "Booking successful! View in My Bookings.",
       book_equip_success: "Equipment booked! View in My Bookings.",
       book_fail: "Booking failed. Please try again.",
+
+      // ── Booking Policy ──
+      bp_title: "Booking Policy",
+      bp_max_hours: "Bookings cannot exceed 4 hours.",
+      bp_late_cancel: "Late cancellation within 24 hours may result in point deduction.",
+      bp_frequent_cancel: "Frequent late cancellations or no-shows may lead to suspension.",
       lbl_action: "Action",
       btn_approve: "Approve",
       btn_reject: "Reject",
@@ -356,6 +362,12 @@
       book_venue_success: "预约成功！可在【我的预约】中查看。",
       book_equip_success: "设备预约成功！可在【我的预约】中查看。",
       book_fail: "预约失败，请重试。",
+
+      // ── 预约规则 ──
+      bp_title: "预约规则",
+      bp_max_hours: "预约时长不得超过4小时。",
+      bp_late_cancel: "24小时内取消预约可能会扣除积分。",
+      bp_frequent_cancel: "频繁迟取消或未到场可能导致账号暂停使用。",
       lbl_action: "操作",
       btn_approve: "通过",
       btn_reject: "拒绝",

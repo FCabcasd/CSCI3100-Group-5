@@ -18,13 +18,11 @@
     </div>
 
     <div class="policy-card" style="background:#fff8e1;border:1px solid #f3d27a;border-radius:12px;padding:16px 18px;margin-bottom:20px;color:#5b4a1f;">
-      <h3 style="margin:0 0 10px;font-size:18px;">Booking Policy</h3>
+      <h3 style="margin:0 0 10px;font-size:18px;" data-i18n="bp_title">Booking Policy</h3>
       <ul style="margin:0;padding-left:18px;">
-        <li>Bookings cannot exceed 4 hours.</li>
-        <li>Bookings must start and end on the same day.</li>
-        <li>Bookings cannot start in the past.</li>
-        <li>Late cancellation within 24 hours may result in point deduction.</li>
-        <li>Frequent late cancellations or no-shows may lead to suspension.</li>
+        <li data-i18n="bp_max_hours">Bookings cannot exceed 4 hours.</li>
+        <li data-i18n="bp_late_cancel">Late cancellation within 24 hours may result in point deduction.</li>
+        <li data-i18n="bp_frequent_cancel">Frequent late cancellations or no-shows may lead to suspension.</li>
       </ul>
     </div>
 
@@ -181,14 +179,9 @@ document.addEventListener("turbo:load", () => {
     ? { "Authorization": "Bearer " + token, "Accept": "application/json" }
     : { "Accept": "application/json" };
 
-  function t(key) {
-    return key;
-  }
-
   function validateBookingTime(startValue, endValue) {
     const start = new Date(startValue);
     const end = new Date(endValue);
-    const now = new Date();
 
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
       return "Please select valid start and end times.";
@@ -196,19 +189,6 @@ document.addEventListener("turbo:load", () => {
 
     if (start >= end) {
       return "End time must be later than start time.";
-    }
-
-    if (start < now) {
-      return "Booking cannot start in the past.";
-    }
-
-    const sameDay =
-      start.getFullYear() === end.getFullYear() &&
-      start.getMonth() === end.getMonth() &&
-      start.getDate() === end.getDate();
-
-    if (!sameDay) {
-      return "Booking must start and end on the same day.";
     }
 
     const maxDurationMs = 4 * 60 * 60 * 1000;
@@ -223,14 +203,16 @@ document.addEventListener("turbo:load", () => {
     enableTime: true,
     dateFormat: "Y-m-d H:i",
     time_24hr: true,
-    locale: "en"
+    locale: "en",
+    minDate: new Date()
   });
 
   flatpickr("#book-end", {
     enableTime: true,
     dateFormat: "Y-m-d H:i",
     time_24hr: true,
-    locale: "en"
+    locale: "en",
+    minDate: new Date()
   });
 
   if (token) {

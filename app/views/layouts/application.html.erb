@@ -33,7 +33,7 @@
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
-    <script src="/i18n.js"></script>
+    <script src="/i18n.js?v=<%= Time.now.to_i %>"></script>
   </head>
 
   <body>
