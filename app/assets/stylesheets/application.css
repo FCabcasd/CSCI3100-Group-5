@@ -37,12 +37,6 @@
   margin-bottom: 2rem;
   color: #fff;
 }
-.auth-emblem {
-  width: 90px;
-  height: auto;
-  margin-bottom: 0.8rem;
-  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
-}
 .auth-brand h1 {
   font-size: 2.2rem;
   font-weight: 700;
