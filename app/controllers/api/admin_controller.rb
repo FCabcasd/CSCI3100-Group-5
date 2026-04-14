@@ -1,9 +1,11 @@
 module Api
   class AdminController < BaseController
-    before_action :require_admin!
+    before_action :require_tenant_admin!
 
     def users
       scope = User.where(is_active: true)
+      # Tenant admins can only see users in their own tenant
+      scope = scope.where(tenant_id: @current_user.tenant_id) unless @current_user.admin?
       if params[:role].present?
         roles = Array(params[:role])
         scope = scope.where(role: roles.map { |r| User.roles[r] }.compact)

@@ -45,7 +45,6 @@
           <option value="video_conference">Video Conference</option>
           <option value="outdoor">Outdoor</option>
         </select>
-        <button class="btn-apply-filter" id="apply-filter-btn"><i class="bi bi-funnel"></i> <span data-i18n="apply_filters">Apply Filters</span></button>
         <span id="result-count" class="result-count"></span>
       </div>
     </div>
@@ -156,7 +155,6 @@ document.addEventListener("turbo:load", () => {
   const resultCount = document.getElementById("result-count");
   const loadMoreWrap = document.getElementById("load-more-wrap");
   const loadMoreBtn = document.getElementById("load-more-btn");
-  const applyBtn = document.getElementById("apply-filter-btn");
   const authHeaders = token ? { "Authorization": "Bearer " + token, "Accept": "application/json" } : { "Accept": "application/json" };
 
   // Initialize flatpickr date pickers
@@ -246,7 +244,6 @@ document.addEventListener("turbo:load", () => {
     dropdown.classList.remove("show"); fetchVenues();
   });
 
-  applyBtn.addEventListener("click", applyClientFilters);
   filterCapacity.addEventListener("change", applyClientFilters);
   filterFeature.addEventListener("change", applyClientFilters);
 

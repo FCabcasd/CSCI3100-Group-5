@@ -33,7 +33,7 @@ module Api
     def show
       booking = Booking.includes(:venue, :user, :equipment_list).find(params[:id])
 
-      unless booking.user_id == @current_user.id || @current_user.admin?
+      unless booking.user_id == @current_user.id || @current_user.admin? || @current_user.tenant_admin?
         return render json: { error: "Access denied" }, status: :forbidden
       end
 
@@ -45,7 +45,7 @@ module Api
     def cancel
       booking = Booking.find(params[:id])
 
-      unless booking.user_id == @current_user.id || @current_user.admin?
+      unless booking.user_id == @current_user.id || @current_user.admin? || @current_user.tenant_admin?
         return render json: { error: "Access denied" }, status: :forbidden
       end
 
