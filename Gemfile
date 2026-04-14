@@ -22,7 +22,7 @@ gem "bcrypt", "~> 3.1.7"
 gem "jwt", "~> 2.7"
 
 # OpenAI integration for AI consultant
-gem "ruby-openai", "~> 6.0"
+gem "ruby-openai", "~> 8.3"
 
 # CORS support for API
 gem "rack-cors"
