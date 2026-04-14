@@ -151,11 +151,15 @@ open coverage/index.html
 ## Feature Ownership
 | Feature | Primary Developer | Secondary Developer | Notes |
 |---------|-------------------|---------------------|-------|
-| User Auth and Roles | | | |
+| User Auth and Roles | | | Uses JWT token and bcrypt|
 | Venue/Equipment registration | | | |
-| conflict detection logic | | | |
+| Venue Calendar | | | Uses FullCalendar API |
+| conflict detection logic | | | check and reject immediately if time clashes during registration |
+| Avoid cross-tenant complexity | | | Tenent-scoped venues/equipment in database |
 | Cancellation and Point deduction system | | | |
-| Search Engine and filter |  | | | 
-| Google Maps |  | | |
-| Email | | | | 
-| AI | | | |
+| optimistic locking | | | Each bookings is pending and waiting for admin to confirm |
+| Registration Data Analytics | | | Interactive Dashboards |
+| Search Engine and filter |  | | Uses Fuzzy Search | 
+| Google Maps |  | | Uses GoogleMap API |
+| Email notification | | | | 
+| AI assistant| | | Uses Gemini API |
