@@ -165,3 +165,18 @@ open coverage/index.html
 | Google Maps | Geyu Liu | Zhiyu Wang | Uses GoogleMap API |
 | Email notification | Cheung Ka Tsun | Zhiyu Wang | Uses Action Mailer with Resend SMTP | 
 | AI assistant | Cheung Ka Tsun | Zhiyu Wang | Uses Gemini API |
+
+
+
+## Demo Accounts
+
+Each department (tenant) has its own **tenant_admin**, who can only manage and approve bookings for venues/equipment belonging to their **own department**. The system-level **admin** has full system privileges.
+
+| Role | Email | Password | Tenant |
+|------|-------|----------|--------|
+| System Admin | `admin@cuhk.edu.hk` | `admin123` | |
+| CS Tenant Admin | `cs_admin@cuhk.edu.hk` | `password123` | Computer Science |
+| EE Tenant Admin | `ee_admin@cuhk.edu.hk` | `password123` | Electronic Engineering |
+| Physics Tenant Admin | `phys_admin@cuhk.edu.hk` | `password123` | Physics |
+| OSA Tenant Admin | `osa_admin@cuhk.edu.hk` | `password123` | Office of Student Affairs |
+| Library Tenant Admin | `lib_admin@cuhk.edu.hk` | `password123` | University Library |
