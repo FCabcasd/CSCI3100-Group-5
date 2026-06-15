@@ -19,7 +19,7 @@ gem "jbuilder"
 gem "bcrypt", "~> 3.1.7"
 
 # JWT authentication
-gem "jwt", "~> 2.7"
+gem "jwt", "~> 3.1"
 
 # OpenAI integration for AI consultant
 gem "ruby-openai", "~> 6.0"
